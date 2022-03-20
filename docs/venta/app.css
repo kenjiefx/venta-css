@@ -1,0 +1,100 @@
+* {margin:0; padding:0; box-sizing:border-box;}
+
+.flex {
+  display: flex;
+}
+
+.dir-col {
+  flex-direction: column;
+}
+
+.ac {
+  align-items: center;
+}
+
+.red {
+  color: red;
+}
+
+.jc {
+  justify-content: center;
+}
+
+.h-inherit {
+  height: inherit;
+}
+
+.h-100 {
+  height: 99vh;
+}
+
+.w-inherit {
+  width: inherit;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.w-50 {
+  width: 50%;
+}
+
+.loading {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  height: 35px;
+}
+
+.text:hover {
+  color: red;
+  font-weight: bold;
+}
+
+.gradient {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+}
+
+.stack1 {
+  background: radial-gradient(at 90% 90%, rgba(0,255,0,.6) 0%, rgba(0,255,0,0) 80%);
+}
+
+.stack2 {
+  background: radial-gradient(at 70% 30%, rgba(229,93,135,0.5) 0%, rgba(95,195,228,0.5) 80%);
+}
+
+.stack3 {
+  background: radial-gradient(at 20% 30%, rgba(34,193,195,.6) 0%, rgba(253,187,45,.6) 80%);
+  background-size: 200% 200%;
+  animation: gradient 5s ease infinite alternate;
+}
+
+.site-logo-placeholder {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 4rem;
+}
+
+.site-logo {
+  width: 20%;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.4rem;
+  line-height: 3.4rem;
+  font-size: 2.8rem;
+  opacity: 70%;
+  color: white;
+  text-decoration: none;
+  transition: 0.2s ease-in-out;
+}
