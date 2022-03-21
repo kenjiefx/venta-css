@@ -37,7 +37,7 @@ class CSSBuilder {
     $first = substr(str_shuffle($firsts),(-1));
     $name = $first.substr(str_shuffle($chars),(-2));
     if(isset($this->cssBank[$name])) $isValid = false;
-    while(!$isValid) createClassName();
+    while(!$isValid) $name = createClassName();
     return $name;
   }
 
@@ -57,7 +57,6 @@ class CSSBuilder {
       }
     }
     asort($selectors);
-
     foreach ($selectors as $selector => $rules) {
       if (count($rules)>0) {
         $this->registerRule($selector,$rules);
