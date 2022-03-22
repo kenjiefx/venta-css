@@ -57,6 +57,7 @@ class CSSBuilder {
       }
     }
     asort($selectors);
+
     foreach ($selectors as $selector => $rules) {
       if (count($rules)>0) {
         $this->registerRule($selector,$rules);
