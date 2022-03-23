@@ -5,6 +5,7 @@ use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Build\ReversionHandler;
 use \Kenjiefx\VentaCss\Build\CSSBuilder;
 use \Kenjiefx\VentaCss\Build\FileSys;
+use \Kenjiefx\VentaCss\Build\BuildManager;
 
 class BuilderFacade {
 
@@ -18,7 +19,14 @@ class BuilderFacade {
     $this->argv = $argv;
   }
 
+  
   public function build()
+  {
+      $manager = new BuildManager($this->argv);
+      $manager->build();
+  }
+
+  public function Oldbuild()
   {
     try {
       if (!isset($this->argv[2])) {

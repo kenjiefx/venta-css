@@ -3,11 +3,15 @@
 namespace Kenjiefx\VentaCss\Build;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Venta\Venta;
-namespace Kenjiefx\VentaCss\Build\CSS\CSSBuilderFacade;
+use \Kenjiefx\VentaCss\Build\BuilderFacadeInterface;
+use \Kenjiefx\VentaCss\Build\CSS\CSSBuilderFacade;
+use \Kenjiefx\VentaCss\Build\HTML\HTMLBuilderFacade;
 
-class BuildManager {
+class BuildManager implements BuilderFacadeInterface {
 
     private string $namespace;
+    private CSSBuilderFacade $CSSBuilder;
+    private int $startTime;
 
     public function __construct(
         array $argv
@@ -20,26 +24,35 @@ class BuildManager {
                 );
             }
         } catch (\Exception $e) {
-            CoutSteamer::cout("Error {$e->getMessage()}",'error');
+            CoutStreamer::cout("Error {$e->getMessage()}",'error');
             exit();
         }
-
+        $this->startTime = microtime(true);
         $this->namespace = $argv[2];
-        $this->loadNamespace();
+        $this->loadTools();
     }
 
     /**
      * @throws Exception
      * When namespace isn't found
      */
-    public function loadNamespace()
+    public function loadTools()
     {
         $this->venta = new Venta($this->namespace);
+        $this->CSSBuilder = new CSSBuilderFacade(
+            $this->namespace,
+            $this->venta
+        );
+        $this->HTMLBuilder = new HTMLBuilderFacade(
+            $this->namespace,
+            $this->venta
+        );
     }
 
-    public function buildCss()
+
+    public function build()
     {
-        
+        $this->CSSBuilder->build();
     }
 
 

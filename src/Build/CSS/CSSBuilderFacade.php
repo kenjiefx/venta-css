@@ -3,18 +3,28 @@
 namespace Kenjiefx\VentaCss\Build\CSS;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Venta\Venta;
+use \Kenjiefx\VentaCss\Build\BuilderFacadeInterface;
+use \Kenjiefx\VentaCss\Build\CSS\CSSBuildManager;
 
-class CSSBuilderFacade {
+class CSSBuilderFacade implements BuilderFacadeInterface{
 
     private string $namespace;
     private Venta $venta;
+    private CSSBuildManager $cssBuildManager;
 
     public function __construct(
-        $namespace
+        string $namespace,
+        Venta $venta
         )
     {
         $this->namespace = $namespace;
-        $this->venta     = new Venta($namespace);
+        $this->venta = $venta;
+        $this->cssBuildManager = new CSSBuildManager($this->venta);
+    }
+
+    public function build()
+    {
+        $this->cssBuildManager->build();
     }
 
 
