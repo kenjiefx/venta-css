@@ -13,27 +13,29 @@ class CSSModel {
         $this->css = [];
     }
 
-    public function addClass(
-        string $className
+    public function createSelector (
+        string $selectorName
         )
     {
-        $this->css[$className] = [];
+        $this->css[$selectorName] = [];
         return $this;
     }
 
-    public function removeClass()
+    public function removeSelector (
+        string $selectorName
+        )
     {
-        unset($this->css[$className]);
+        unset($this->css[$selectorName]);
         return $this;
     }
 
     public function setAttribute(
-        string $className,
+        string $selectorName,
         string $property,
         string $value
         )
     {
-        $this->css[$className][$property] = $value;
+        $this->css[$selectorName][$property] = $value;
         return $this;
     }
 
@@ -42,7 +44,7 @@ class CSSModel {
         string $property
         )
     {
-        unset($this->css[$className][$property]);
+        unset($this->css[$selectorName][$property]);
         return $this;
     }
 
