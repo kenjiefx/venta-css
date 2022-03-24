@@ -59,7 +59,7 @@ class CSSBuildManager {
         if (count($rules)>0) {
 
             # Register a random class name
-            $selectorObj->minifyName($this->RefinedCss->export());
+            $selectorObj->minifyName($this->RefinedCss->export(),$this->references);
             $this->RefinedCss->createSelector($selectorObj->minifiedName);
 
             /**
@@ -89,6 +89,13 @@ class CSSBuildManager {
                      */
 
                     if ($selectorObj->typeOf!==$existingSelectorObj->typeOf) continue;
+
+                }
+
+                if ($selectorObj->hasChildren) {
+
+                    if (!$existingSelectorObj->hasChildren) continue;
+                    if ($selectorObj->parent!==$existingSelectorObj->parent) continue;
 
                 }
 

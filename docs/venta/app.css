@@ -21,6 +21,14 @@
   justify-content: center;
 }
 
+.parent .child1 {
+    display: flex;
+}
+
+.parent .child2 {
+    display: flex;
+}
+
 .glitch {
     font-weight: bold;
     font-size: 24px;
