@@ -1,65 +1,41 @@
-* {margin:0; padding:0; box-sizing:border-box;}
+* {font-family:'Roboto';}
 
-.flex {
-  display: flex;
-}
-
-.dir-col {
-  flex-direction: column;
-}
-
-.ac {
-  display: flex;
-  align-items: center;
-}
-
-.red {
-  color: red;
-}
-
-.jc {
-  justify-content: center;
-}
-
-.parent .child1 {
-    display: flex;
-}
-
-.parent .child2 {
-    display: flex;
-}
-
-.glitch {
-    font-weight: bold;
+.first-name {
+    font-family: 'Roboto';
     font-size: 24px;
 }
 
-.user:hover {
+.last-name {
+    font-family: 'Roboto';
+    font-size: 18px;
+}
+
+.user-profile .photo {
+    width: 24px;
+    height: 24px;
+}
+
+.user-profile {
+    margin-left: 24px;
+}
+
+.title {
+    font-family: 'Roboto';
+}
+
+.header-wrapper {
+    height: 24px;
+    width: 24px;
+}
+
+.header-container {
+    height: 24px;
+    width: 24px;
     font-weight: 200;
 }
 
-.bench {
-    font-weight: bold;
-    font-size: 24px;
-    display: flex;
-}
-
-.w-inherit {
-  width: inherit;
-}
-
-.w-100 {
-  width: 100%;
-}
-
-.w-50 {
-  width: 50%;
-}
-
-.loading {
-  display: flex;
-  width: 100%;
-  height: 100vh;
-  align-items: center;
-  justify-content: center;
+.header-name {
+    height: 24px;
+    width: 24px;
+    font-family: 'Roboto';
 }

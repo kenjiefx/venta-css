@@ -18,4 +18,6 @@ class HTMLBuilderFacade {
         $this->venta = $venta;
     }
 
+
+
 }

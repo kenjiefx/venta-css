@@ -19,14 +19,15 @@ class BuilderFacade {
     $this->argv = $argv;
   }
 
-  
+
   public function build()
   {
       $manager = new BuildManager($this->argv);
       $manager->build();
+
   }
 
-  public function Oldbuild()
+  public function newBuild()
   {
     try {
       if (!isset($this->argv[2])) {

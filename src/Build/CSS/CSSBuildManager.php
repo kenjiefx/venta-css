@@ -45,6 +45,7 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
+
         echo json_encode($this->RefinedCss->export()).PHP_EOL.PHP_EOL;
         echo json_encode($this->references).PHP_EOL.PHP_EOL;
     }
@@ -170,6 +171,11 @@ class CSSBuildManager {
 
         }
         unset($class);
+    }
+
+    public function getReference()
+    {
+        return $this->references;
     }
 
 
