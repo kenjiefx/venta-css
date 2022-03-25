@@ -19,6 +19,22 @@
     margin-left: 24px;
 }
 
+.link:hover {
+    color: blue;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+.user-profile, .user-header {
+    padding: 20px;
+}
+
+.parent .child1 {
+    font-size: 32px;
+}
+
 .title {
     font-family: 'Roboto';
 }

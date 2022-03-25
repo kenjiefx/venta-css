@@ -15,7 +15,8 @@ class CSSBuildManager {
     private CSSModel $ParsedCSS;
     private CSSModel $RefinedCss;
     private string $css;
-    private array $references;
+    private array $registrar;
+    private array $compiled;
 
     public function __construct(
         Venta $venta
@@ -24,7 +25,8 @@ class CSSBuildManager {
         $this->venta = $venta;
         $this->ParsedCSS = new CSSModel;
         $this->RefinedCss = new CSSModel;
-        $this->references = [];
+        $this->registrar = [];
+        $this->compiled = [];
     }
 
     public function build()
@@ -45,9 +47,10 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
+        $this->compile();
 
-        echo json_encode($this->RefinedCss->export()).PHP_EOL.PHP_EOL;
-        echo json_encode($this->references).PHP_EOL.PHP_EOL;
+        echo json_encode($this->compiled).PHP_EOL.PHP_EOL;
+        echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
     }
 
 
@@ -56,121 +59,104 @@ class CSSBuildManager {
         array $rules
         )
     {
-        $selectorObj = new SelectorModel($selectorName);
-        if (count($rules)>0) {
+        # Parsing every selector entity in a group of selectors
+        $selectorGroups = explode(',',$selectorName);
 
-            # Register a random class name
-            $selectorObj->minifyName($this->RefinedCss->export(),$this->references);
-            $this->RefinedCss->createSelector($selectorObj->minifiedName);
+        foreach ($selectorGroups as $selectorGroup) {
+
+            # Parsing every selector entity in a family of selectors
+            $selectorFamily = explode(' ',trim($selectorGroup));
+
+            $parentOf = null;
+            $childOf = null;
+
+            $numberOfFamilyMember = count($selectorFamily);
+            $familyMemberIterator = 1;
 
             /**
-             * A temporary array containing all the possible aggregated
-             * selector names
+             * Looping through each of the family members!
+             * We neen to make sure that in a certain CSS selector
+             * only the last child declared will receive the rules.
+             * Here, we also make sure that every family generation
+             * is registered in the registrar array
              */
-            $selectorNameReferences=[$selectorObj->minifiedName];
+            foreach ($selectorFamily as $selector) {
 
-            foreach ($this->RefinedCss->export() as $existingSelectorName => $existingRules) {
+                $selectorObj = new SelectorModel(trim($selector));
+                $selectorObj->minifyName($this->registrar);
+                $selectorObj->rules = [];
 
-                $existingSelectorObj = new SelectorModel($existingSelectorName);
+                # Registering parent name and child name
+                $selectorObj->parentOf = $parentOf;
+                $selectorObj->childOf = $childOf;
 
-                if ($selectorObj->hasPseudo) {
-                    /**
-                     * Registration process first checks if the current Selector Object
-                     * contains pseudo elements.
-                     * If the compared-with existing selector do not have, then
-                     * we skip the process
-                     */
-                    if (!$existingSelectorObj->hasPseudo) continue;
-
-                    /**
-                     * Secondly, the pseudo-element must be the same for both
-                     * selectors.
-                     * @example a:hover = a:hover
-                     * If not, then skip this process
-                     */
-
-                    if ($selectorObj->typeOf!==$existingSelectorObj->typeOf) continue;
-
+                # Making sure that only the last child declared in the selector
+                # Will register the rules given to that selector
+                if ($familyMemberIterator===$numberOfFamilyMember) {
+                    $selectorObj->rules = $rules;
                 }
 
-                if ($selectorObj->hasChildren) {
+                $childOf = trim($selector);
 
-                    if (!$existingSelectorObj->hasChildren) continue;
-                    if ($selectorObj->parent!==$existingSelectorObj->parent) continue;
+                # Saving the Selector object to the Registrar array
+                $this->registrar[$selectorObj->minifiedName] = $selectorObj;
 
-                }
+                $familyMemberIterator++;
 
-                /**
-                 * Counting how many rules are matching between the current
-                 * registering selector and the current "matched" existing
-                 * selector
-                 */
+            }
+        }
+    }
 
-                $matchingRules = 0;
-                $blacklistedProperties = [];
+    public function compile()
+    {
+        foreach ($this->registrar as $selectorObj) {
 
-                foreach ($existingRules as $existingProperty => $existingValue) {
+            $toCompileRules = $selectorObj->rules;
 
-                    if (isset($rules[$existingProperty])&&$rules[$existingProperty]===$existingValue) {
-                        $matchingRules++;
-                        array_push($blacklistedProperties,$existingProperty);
-                    }
+            foreach ($this->compiled as $rules) {
 
-                }
+                if (!empty($toCompileRules)) {
 
-                if ($matchingRules===count($existingRules)) {
+                    $existingRules = $this->findExistingRules(
+                        $selectorObj->rules,
+                        $rules
+                    );
 
-                    /**
-                     * Avoiding adding the same reference name
-                     */
-                    if (!in_array($existingSelectorName,$selectorNameReferences)) {
-                        array_push($selectorNameReferences,$existingSelectorName);
-                    }
-
-                    foreach ($blacklistedProperties as $blacklistedProperty) {
-                        /**
-                         * NOTE: Setting rule to NULL
-                         * On the later part, properties that was CONVERTED to NULL
-                         * would be skipped in the final registration of the CSS
-                         * Selector
-                         */
-                        $rules[$blacklistedProperty] = NULL;
+                    foreach ($existingRules as $property => $value) {
+                        unset($toCompileRules[$property]);
                     }
                 }
 
             }
 
-            /**
-             * Saving the remaining unmatched
-             * properties and values as a single
-             * selector
-             */
-            $isAllPropertyAndValuesMatched = true;
+            $this->compiled[$selectorObj->minifiedName] = $toCompileRules;
 
-            foreach ($rules as $property => $value) {
-                if ($value!==NULL) {
-                    $isAllPropertyAndValuesMatched = false;
-                    $this->RefinedCss->setAttribute(
-                         $selectorObj->minifiedName,
-                         $property,
-                         $value
-                     );
-                }
+            # Skipping to compile any selector that has empty rules
+            if (empty($this->compiled)) {
+                $this->compiled[$selectorObj->minifiedName] = $selectorObj->rules;
+                return;
             }
 
-            /**
-             * This is when the properties and values were ALL MATCHED
-             * then we do not need to register a new CSS selector
-             */
-            if ($isAllPropertyAndValuesMatched) {
-                unset($selectorNameReferences[0]);
-                $this->RefinedCss->removeSelector($selectorObj->minifiedName);
-            }
+            //$this->compiled[$selectorObj->minifiedName] = $toCompileRules;
 
-            $this->references[$selectorName] = implode(' ',$selectorNameReferences);
 
         }
-        unset($class);
+    }
+
+    public function findExistingRules(
+        array $selector1,
+        array $selector2
+        )
+    {
+        $existingRules = [];
+        foreach ($selector1 as $property => $value) {
+            if (isset($selector2[$property])) {
+                if ($selector2[$property]===$value) {
+                    $existingRules[$property] = $value;
+                }
+            }
+        }
+        return $existingRules;
     }
 
     public function getReference()

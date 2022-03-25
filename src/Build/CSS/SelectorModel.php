@@ -5,82 +5,54 @@ use \Kenjiefx\VentaCss\Build\CSS\Utils;
 
 class SelectorModel {
 
-    public string $name;
+    public string $realName;
     public string $minifiedName;
     public string $typeOf;
+    public string|null $parentOf;
+    public string|null $childOf;
+
+    # Pseudo Class
     public bool $hasPseudo;
-    public bool $hasChildren;
-    public string $pseudo;
-    public string $parent;
-    public array $children;
+    public string|null $pseudoClass;
 
     public function __construct(
-        string $name
+        string $realName
         )
     {
-        $this->name = $name;
-        $this->typeOf = 'selector';
+        $this->realName = $realName;
         $this->hasPseudo = false;
-        $this->hasChildren = false;
-        $this->parent = '';
-        $this->children = [];
-        $this->pseudo = '';
+        $this->pseudoClass = null;
+        $this->typeOf = 'element';
         $this->parse();
     }
 
     public function minifyName(
-        array $existingNames = null,
-        array $existingReferences = null
+        array $registrar
         )
     {
-        $minifiedName = Utils::createClassName($existingNames??[]);
-
-        /**
-         * When the selector is *, we need to
-         * force the classname to be just *
-         */
-        if ($this->name==='*') {
+        if ($this->realName==='*') {
             $this->minifiedName = '*';
-            return;
         }
 
-        if ($this->typeOf==':pseudo') {
-            $this->minifiedName = $minifiedName.':'.$this->pseudo;
-            return;
-        }
+        $this->minifiedName = Utils::createClassName($registrar);
 
-        if ($this->typeOf=='.parent .sibling') {
-            $minifiedParentName = $this->findParents($existingReferences??[],$this->parent);
-            if (null===$minifiedParentName) $minifiedParentName = Utils::createClassName($existingNames??[]);
-            $this->minifiedName = $minifiedParentName.' '.Utils::createClassName($existingNames??[]);
-            return;
-        }
-
-        $this->minifiedName = $minifiedName;
         return;
 
     }
 
     private function parse()
     {
-        if ($this->name==='*') {
-            $this->typeOf = '*';
-            return;
-        }
-
-        if (str_contains($this->name,':')) {
-            $this->typeOf    = ':pseudo';
+        if (str_contains($this->realName,':')) {
             $this->hasPseudo = true;
-            $this->pseudo    = explode(':',$this->name)[1];
-            return;
+            $this->pseudoClass = explode(':',$this->realName)[1];
+        }
+        if (str_contains($this->realName,'.')) {
+            $this->typeOf = 'class';
+        }
+        if (str_contains($this->realName,'#')) {
+            $this->typeOf = 'id';
         }
 
-        if (str_contains($this->name,' ')) {
-            $this->typeOf      = '.parent .sibling';
-            $this->hasChildren = true;
-            $this->parent = explode(' ',$this->name)[0];
-            array_push($this->children,explode(' ',$this->name)[1]);
-        }
     }
 
     private function findParents(
@@ -88,19 +60,7 @@ class SelectorModel {
         string $parentName
         )
     {
-        foreach ($existingReferences as $family => $minifiedReference) {
-            $thisFamily = explode(' ',$family);
-            if ($thisFamily[0]===$parentName) {
-                return explode(' ',$minifiedReference)[0];
-            }
-            if ('.'.$thisFamily[0]===$parentName) {
-                return explode(' ',$minifiedReference)[0];
-            }
-            if ('#'.$thisFamily[0]===$parentName) {
-                return explode(' ',$minifiedReference)[0];
-            }
-        }
-        return null;
+
     }
 
 
