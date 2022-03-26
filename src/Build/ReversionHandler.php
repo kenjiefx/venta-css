@@ -2,75 +2,67 @@
 
 namespace Kenjiefx\VentaCss\Build;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
-use \Kenjiefx\VentaCss\Build\FileSys;
+use \Kenjiefx\VentaCss\Build\HTML\FileSys;
+use \Kenjiefx\VentaCss\Venta\Venta;
 
 class ReversionHandler {
 
-  private string $namespace;
+    private array $argv;
+    private Venta $venta;
+    private string $namespace;
 
-  public function __construct(
-    $namespace
+    public function __construct(
+        array $argv
     )
-  {
-    $this->namespace = $namespace;
-  }
-
-  public function push()
-  {
-
-    $vntDir = ROOT.'/vnt/'.$this->namespace;
-    $pushDir = ROOT.'/'.$this->namespace;
-
-    FileSys::traverse($vntDir,function(
-      $filePath,
-      $fileName,
-      $fileExtension,
-      $closureArgs
-      ){
-        if ($fileExtension==='venta') {
-          copy($closureArgs['vntDir'].'/venta/app.css',$closureArgs['pushDir'].'/venta/app.css');
-          return;
+    {
+        try {
+            if (!isset($argv[2])) {
+                throw new \Exception(
+                    'Revert command requires directory'
+                );
+            }
+        } catch (\Exception $e) {
+            CoutStreamer::cout("Error {$e->getMessage()}",'error');
+            exit();
         }
-        if ($fileExtension==='dir') {
-          $puller = new ReversionHandler($this->namespace.'/'.$fileName);
-          $puller->push();
-          return;
-        }
-        copy($filePath,$closureArgs['pushDir'].'/'.$fileName);
-    },['pushDir'=>$pushDir,'vntDir'=>$vntDir]);
-  }
-
-  public function pull()
-  {
-    $buildDir = ROOT.'/'.$this->namespace;
-    try {
-      if (!file_exists($buildDir)) {
-        throw new \Exception('Build directory /'.$this->namespace.' not found', 1);
-      }
-    } catch (\Exception $e) {
-      CoutStreamer::cout('Error: '.$e->getMessage(),'error');
-      exit();
-    }
-    $pullDir = ROOT.'/vnt/'.$this->namespace;
-    if (!file_exists($pullDir)) {
-      mkdir($pullDir);
+        $this->argv = $argv;
+        $this->namespace = $argv[2];
+        $this->venta = new Venta($this->namespace);
     }
 
-    FileSys::clear($pullDir);
+        public function pull(
+            $dirName = null
+            )
+        {
+            $dir = $dirName ?? '/';
+            try {
+                if (!file_exists($this->venta->getFrontend().$dir)) {
+                    throw new \Exception('Build directory /'.$this->namespace.' not found');
+                }
+            } catch (\Exception $e) {
+                CoutStreamer::cout('Error: '.$e->getMessage(),'error');
+                exit();
+            }
 
-    FileSys::traverse($buildDir,function(
-      $filePath,
-      $fileName,
-      $fileExtension,
-      $closureArgs
-      ){
-        if ($fileExtension==='dir') {
-          $puller = new ReversionHandler($this->namespace.'/'.$fileName);
-          $puller->pull();
-          return;
+            $pullDir = $this->venta->getBackend().$dir;
+
+            FileSys::clear($pullDir);
+            
+            FileSys::traverse($this->venta->getFrontend().$dir,function(
+                $filePath,
+                $fileName,
+                $fileExtension,
+                $closureArgs
+            ){
+                if ($fileExtension==='dir') {
+                    $puller = new ReversionHandler($this->argv);
+                    $puller->pull('/'.$fileName);
+                    return;
+                }
+                copy($filePath,$closureArgs['pullDir'].'/'.$fileName);
+            },['pullDir'=>$pullDir]);
         }
-        copy($filePath,$closureArgs['pullDir'].'/'.$fileName);
-    },['pullDir'=>$pullDir]);
-  }
+
+
 
 }

@@ -25,14 +25,12 @@ class Venta {
         try {
             if (!file_exists($this->frontend)) {
                 throw new \Exception(
-                    'Unable to load required directory:'.$this->frontend.
-                    ', directory do not exist'
+                    'Build directory /'.$this->namespace.' not found'
                 );
             }
             if (!file_exists($this->backend)) {
                 throw new \Exception(
-                    'Unable to load required directory:'.$this->backend.
-                    ', directory do not exist'
+                    'Build directory /'.$this->namespace.' not found'
                 );
             }
         } catch (\Exception $e) {

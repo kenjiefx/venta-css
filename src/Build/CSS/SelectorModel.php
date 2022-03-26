@@ -14,6 +14,7 @@ class SelectorModel {
     # Pseudo Class
     public bool $hasPseudo;
     public string|null $pseudoClass;
+    public string|null $pseudoSeparator;
 
     public function __construct(
         string $realName
@@ -22,6 +23,9 @@ class SelectorModel {
         $this->realName = $realName;
         $this->hasPseudo = false;
         $this->pseudoClass = null;
+        $this->pseudoSeparator = null;
+        $this->parentOf = null;
+        $this->childOf = null;
         $this->typeOf = 'element';
         $this->parse();
     }
@@ -32,7 +36,17 @@ class SelectorModel {
     {
         if ($this->realName==='*') {
             $this->minifiedName = '*';
+            return;
         }
+
+        if (!str_contains($this->realName,'.')) {
+            if (!str_contains($this->realName,'#')) {
+                $this->minifiedName = $this->realName;
+                return;
+            }
+        }
+
+
 
         $this->minifiedName = Utils::createClassName($registrar);
 
@@ -44,6 +58,7 @@ class SelectorModel {
     {
         if (str_contains($this->realName,':')) {
             $this->hasPseudo = true;
+            $this->pseudoSeparator = ':';
             $this->pseudoClass = explode(':',$this->realName)[1];
         }
         if (str_contains($this->realName,'.')) {

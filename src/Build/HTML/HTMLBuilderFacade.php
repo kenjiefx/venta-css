@@ -3,11 +3,13 @@
 namespace Kenjiefx\VentaCss\Build\HTML;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Venta\Venta;
+use \Kenjiefx\VentaCss\Build\HTML\HTMLBuilderManager;
 
 class HTMLBuilderFacade {
 
     private string $namespace;
     private Venta $venta;
+    private HTMLBuilderManager $htmlBuilderManager;
 
     public function __construct(
         string $namespace,
@@ -16,6 +18,12 @@ class HTMLBuilderFacade {
     {
         $this->namespace = $namespace;
         $this->venta = $venta;
+        $this->htmlBuilderManager = new HTMLBuilderManager($this->venta);
+    }
+
+    public function build()
+    {
+        $this->htmlBuilderManager->build();
     }
 
 

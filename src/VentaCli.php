@@ -23,6 +23,8 @@ class VentaCli {
         switch ($command) {
             case 'build':
                 $builder = new BuilderFacade($this->argv);
+                $reversion = new ReversionHandler($this->argv);
+                $reversion->pull();
                 $builder->build();
                 break;
             case 'hook':

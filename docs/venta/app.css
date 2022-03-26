@@ -1,4 +1,4 @@
-* {font-family:'Roboto';}
+* {font-family:'Rubik';}
 
 .first-name {
     font-family: 'Roboto';
@@ -13,6 +13,10 @@
 .user-profile .photo {
     width: 24px;
     height: 24px;
+}
+
+.site-title {
+    font-family: 'Roboto';
 }
 
 .user-profile {
@@ -33,6 +37,10 @@ h1 {
 
 .parent .child1 {
     font-size: 32px;
+}
+
+.parent .child2 {
+    font-size: 45px;
 }
 
 .title {
