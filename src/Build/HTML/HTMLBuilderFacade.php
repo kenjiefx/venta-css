@@ -23,6 +23,7 @@ class HTMLBuilderFacade {
 
     public function build()
     {
+        CoutStreamer::cout('Rendering new selectors in HTML...');
         $this->htmlBuilderManager->build();
     }
 

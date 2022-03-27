@@ -19,11 +19,12 @@ class HTMLBuilderManager {
         $this->venta = $venta;
         $this->usables = [];
         $this->compiled = [];
-        //$this->getCompiledCss();
     }
 
     public function build()
     {
+        $this->getCompiledCss();
+
         FileSys::traverse($this->venta->getFrontend(),function(
             $filePath,
             $fileName,
@@ -35,28 +36,26 @@ class HTMLBuilderManager {
                 $dom = file_get_html($filePath);
                 $references = json_decode(file_get_contents($closureArgs['backEnd'].'/venta/__venta.css.json'),TRUE);
 
-                foreach ($references as $realName => $minifiedName) {
-                    if ($realName==='*') continue;
-                    if (str_contains($realName,':')) {
-                        $realName = explode(':',$realName)[0];
+                foreach ($references as $realName => $reference) {
+                    if ($reference['typeOf']==='universal'){
+                        $this->addToUsables($reference['html']);
+                        continue;
                     }
-                    if (str_contains($realName,'::')) {
-                        $realName = explode('::',$realName)[0];
-                    }
-                    if ($realName[0]!=='.'&&$realName[0]!=='#') {
+                    if ($reference['typeOf']==='element'){
+                        $this->addToUsables($reference['html']);
                         continue;
                     }
                     foreach($dom->find($realName) as $element) {
-                        if ($realName[0]==='.') {
+                        if ($reference['typeOf']==='class') {
                             $realName = substr($realName,1);
                         }
-                        if ($realName[0]==='#') {
+                        if ($reference['typeOf']==='id') {
                             $realName = substr($realName,1);
                         }
                         $element->removeClass($realName);
-                        $element->addClass($minifiedName);
+                        $element->addClass($reference['html']);
                         $element->removeClass('1');
-                        $this->addToUsables($minifiedName);
+                        $this->addToUsables($reference['html']);
                     }
                 }
 
@@ -76,18 +75,33 @@ class HTMLBuilderManager {
     }
 
     private function addToUsables(
-        string $minifiedName
+        string $htmlRef
         )
     {
         /**
          * @TODO Create a way to only export css that has been used throughout the project
          */
-
+        $refs = explode(' ',$htmlRef);
+        foreach ($refs as $ref) {
+            foreach ($this->compiled as $selector => $rules) {
+                if (str_contains($selector,$ref)) {
+                    $this->usables[$selector] = $rules;
+                }
+            }
+        }
     }
 
     private function createAppCss()
     {
-
+        $css = '';
+        foreach ($this->usables as $selector => $rules) {
+            $css = $css.$selector.'{';
+            foreach ($rules as $property => $value) {
+                $css = $css.$property.':'.$value.';';
+            }
+            $css = $css.'} ';
+        }
+        file_put_contents($this->venta->getFrontend().'/venta/app.css',$css);
     }
 
 }

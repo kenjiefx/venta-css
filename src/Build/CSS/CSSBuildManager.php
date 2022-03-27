@@ -49,15 +49,18 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
+        CoutStreamer::cout('Compressing class names...');
         $this->reduce();
         $this->sortRegistrar();
         $this->compile();
-        # $this->release();
 
-        echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
-        echo json_encode($this->compiled).PHP_EOL.PHP_EOL;
-        echo json_encode($this->reference).PHP_EOL.PHP_EOL;
-        echo json_encode($this->export()).PHP_EOL.PHP_EOL;
+        CoutStreamer::cout('Saving venta/app.css...');
+        $this->release();
+
+        // echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
+        // echo json_encode($this->compiled).PHP_EOL.PHP_EOL;
+        // echo json_encode($this->reference).PHP_EOL.PHP_EOL;
+        // echo json_encode($this->export()).PHP_EOL.PHP_EOL;
 
     }
 
@@ -400,6 +403,7 @@ class CSSBuildManager {
 
     public function release()
     {
+
         file_put_contents(
             $this->venta->getBackend().'/venta/__venta.css.json',
             json_encode($this->reference)

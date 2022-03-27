@@ -4,7 +4,7 @@ namespace Kenjiefx\VentaCss\Build;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Build\ReversionHandler;
 use \Kenjiefx\VentaCss\Build\CSSBuilder;
-use \Kenjiefx\VentaCss\Build\FileSys;
+use \Kenjiefx\VentaCss\Build\HTML\FileSys;
 use \Kenjiefx\VentaCss\Build\BuildManager;
 
 class BuilderFacade {
@@ -24,7 +24,6 @@ class BuilderFacade {
   {
       $manager = new BuildManager($this->argv);
       $manager->build();
-
   }
 
   public function newBuild()

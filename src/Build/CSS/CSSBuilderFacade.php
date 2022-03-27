@@ -24,6 +24,7 @@ class CSSBuilderFacade implements BuilderFacadeInterface{
 
     public function build()
     {
+        CoutStreamer::cout('Compressing venta/app.css...');
         $this->cssBuildManager->build();
     }
 
