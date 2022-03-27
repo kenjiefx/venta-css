@@ -7,9 +7,12 @@ class SelectorModel {
 
     public string $realName;
     public string $minifiedName;
+
+    public string $prefixer;
     public string $typeOf;
-    public string|null $parentOf;
-    public string|null $childOf;
+
+    public SelectorModel|null $parentOf;
+    public SelectorModel|null $childOf;
 
     # Pseudo Class
     public bool $hasPseudo;
@@ -21,62 +24,92 @@ class SelectorModel {
         )
     {
         $this->realName = $realName;
+        $this->prefixer = '';
         $this->hasPseudo = false;
         $this->pseudoClass = null;
         $this->pseudoSeparator = null;
         $this->parentOf = null;
         $this->childOf = null;
-        $this->typeOf = 'element';
-        $this->parse();
+        $this->parseType();
     }
 
     public function minifyName(
         array $registrar
         )
     {
-        if ($this->realName==='*') {
-            $this->minifiedName = '*';
-            return;
-        }
 
-        if (!str_contains($this->realName,'.')) {
-            if (!str_contains($this->realName,'#')) {
+        switch ($this->typeOf) {
+
+            /**
+             * Universal Selector
+             * For universal selector, we do not have to register
+             * a minified name, as we do not need to re-use it
+             * across the CSS file
+             */
+            case 'universal':
+                $this->minifiedName = '*';
+                break;
+
+            /**
+             * Element Selector
+             * While element selectors are re-usable, we do not need
+             * to provide a minified name to them as they can't be
+             * modified in the HTML
+             */
+            case 'element':
                 $this->minifiedName = $this->realName;
-                return;
-            }
+                break;
+
+            # Class and ID Selectors
+            default:
+                $this->minifiedName = Utils::createClassName($registrar);
+                break;
         }
-
-
-
-        $this->minifiedName = Utils::createClassName($registrar);
-
-        return;
 
     }
 
-    private function parse()
+    public function rectifyName()
+    {
+        return $this->prefixer.$this->minifiedName;
+    }
+
+    private function parseType()
     {
         if (str_contains($this->realName,':')) {
-            $this->hasPseudo = true;
-            $this->pseudoSeparator = ':';
-            $this->pseudoClass = explode(':',$this->realName)[1];
+            $this->registerPseudos(':');
+        }
+        if (str_contains($this->realName,'::')) {
+            $this->registerPseudos('::');
         }
         if (str_contains($this->realName,'.')) {
+            $this->prefixer = '.';
             $this->typeOf = 'class';
+            return;
         }
         if (str_contains($this->realName,'#')) {
+            $this->prefixer = '#';
             $this->typeOf = 'id';
+            return;
         }
-
+        if (str_contains($this->realName,'*')) {
+            $this->typeOf = 'universal';
+            return;
+        }
+        $this->typeOf = 'element';
+        return;
     }
 
-    private function findParents(
-        array $existingReferences,
-        string $parentName
+    private function registerPseudos(
+        string $separator
         )
     {
-
+        $this->hasPseudo       = true;
+        $this->pseudoSeparator = $separator;
+        $this->pseudoClass     = explode($separator,$this->realName)[1];
+        $this->realName        = explode($separator,$this->realName)[0];
     }
+
+
 
 
 

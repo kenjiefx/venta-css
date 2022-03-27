@@ -19,7 +19,7 @@ class HTMLBuilderManager {
         $this->venta = $venta;
         $this->usables = [];
         $this->compiled = [];
-        $this->getCompiledCss();
+        //$this->getCompiledCss();
     }
 
     public function build()
@@ -87,7 +87,7 @@ class HTMLBuilderManager {
 
     private function createAppCss()
     {
-        
+
     }
 
 }

@@ -52,12 +52,12 @@ class CSSBuildManager {
         $this->reduce();
         $this->sortRegistrar();
         $this->compile();
-        $this->release();
+        # $this->release();
 
-        //echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
-        //echo json_encode($this->compiled).PHP_EOL.PHP_EOL;
-        // echo json_encode($this->reference).PHP_EOL.PHP_EOL;
-        // echo json_encode($this->export()).PHP_EOL.PHP_EOL;
+        echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
+        echo json_encode($this->compiled).PHP_EOL.PHP_EOL;
+        echo json_encode($this->reference).PHP_EOL.PHP_EOL;
+        echo json_encode($this->export()).PHP_EOL.PHP_EOL;
 
     }
 
@@ -95,8 +95,9 @@ class CSSBuildManager {
                 $selectorObj->rules = [];
 
                 # Registering parent name and child name
-                $selectorObj->parentOf = $parentOf;
-                $selectorObj->childOf = $childOf;
+                if (null!==$childOf) {
+                    $selectorObj->childOf = new SelectorModel($childOf);
+                }
 
                 # Making sure that only the last child declared in the selector
                 # Will register the rules given to that selector
@@ -193,7 +194,12 @@ class CSSBuildManager {
 
         foreach ($this->registrar as $minifiedName => $selectorObj) {
 
-            $this->addReference($selectorObj->realName,'');
+            $this->addReference(
+                $selectorObj->realName,
+                '',
+                $selectorObj->prefixer,
+                $selectorObj->typeOf
+            );
 
             $matchingRules   = [];
             $unMatchedRules  = $selectorObj->rules;
@@ -216,8 +222,8 @@ class CSSBuildManager {
                     if ($CselectorObj->pseudoClass!==$selectorObj->pseudoClass) continue;
                 }
 
-                if (null!==$CselectorObj->childOf) {
-                    if ($CselectorObj->childOf!==$selectorObj->pseudoClass) continue;
+                if (null!==$CselectorObj->childOf&&null!==$selectorObj->childOf) {
+                    if ($CselectorObj->childOf->realName!==$selectorObj->childOf->realName) continue;
                 }
 
 
@@ -246,7 +252,12 @@ class CSSBuildManager {
                      */
                     if ($matchingRulesCount===count($CselectorObj->rules)) {
                         # $this->reference[$selectorObj->realName] .= ' '.$CminifiedName;
-                        $this->addReference($selectorObj->realName,$CminifiedName);
+                        $this->addReference(
+                            $selectorObj->realName,
+                            $CminifiedName,
+                            $CselectorObj->prefixer,
+                            $CselectorObj->typeOf
+                        );
                         $toCompile = false;
                         continue;
                     }
@@ -270,19 +281,34 @@ class CSSBuildManager {
                 $proxySelector->minifyName($this->registrar);
                 $proxySelector->rules = $unMatchedRules;
                 $this->compiled[$proxySelector->minifiedName] = $proxySelector;
-                $this->addReference($selectorObj->realName,$proxySelector->minifiedName);
+                $this->addReference(
+                    $selectorObj->realName,
+                    $proxySelector->minifiedName,
+                    $proxySelector->prefixer,
+                    $proxySelector->typeOf
+                );
             }
 
             if (count($unMatchedRules)===0&&$hasMatchingRule===true) {
-                if ($this->reference[$selectorObj->realName]==='') {
-                    $this->reference[$selectorObj->realName] = $minifiedName;
+                if ($this->reference[$selectorObj->realName]['html']==='') {
+                    $this->addReference(
+                        $selectorObj->realName,
+                        $minifiedName,
+                        $selectorObj->prefixer,
+                        $selectorObj->typeOf
+                    );
                     $this->compiled[$minifiedName] = $selectorObj;
                 }
             }
 
 
             if (!$hasMatchingRule) {
-                $this->reference[$selectorObj->realName] = $minifiedName;
+                $this->addReference(
+                    $selectorObj->realName,
+                    $minifiedName,
+                    $selectorObj->prefixer,
+                    $selectorObj->typeOf
+                );
                 $this->compiled[$minifiedName] = $selectorObj;
             }
 
@@ -294,12 +320,13 @@ class CSSBuildManager {
     {
         $forExport = [];
         foreach ($this->compiled as $minifiedName => $selectorObj) {
+            $minifiedName = $selectorObj->prefixer.$minifiedName;
             if ($selectorObj->hasPseudo) {
                 $forExport[$minifiedName.$selectorObj->pseudoSeparator.$selectorObj->pseudoClass] = $selectorObj->rules;
                 continue;
             }
             if (null!==$selectorObj->childOf) {
-                $parentMinifiedName = $this->rectifyParent($this->reference[$selectorObj->childOf]);
+                $parentMinifiedName = $this->reference[$selectorObj->childOf->realName]['css'];
                 $forExport[$parentMinifiedName.' '.$minifiedName] = $selectorObj->rules;
                 continue;
             }
@@ -310,17 +337,6 @@ class CSSBuildManager {
             $forExport[$minifiedName] = $selectorObj->rules;
         }
         return $forExport;
-    }
-
-    private function rectifyParent(
-        string $parentName
-        )
-    {
-        if (str_contains($parentName,' ')) {
-            $tmp = explode(' ',$parentName);
-            return implode('.',$tmp);
-        }
-        return $parentName;
     }
 
 
@@ -341,17 +357,31 @@ class CSSBuildManager {
 
     public function addReference(
         string $realName,
-        string $minifiedName
+        string $minifiedName,
+        string $prefixer,
+        string $typeOf
         )
     {
         if (!isset($this->reference[$realName])) {
-            $this->reference[$realName] = '';
+            $this->reference[$realName] = [
+                'html' => '',
+                'css' => '',
+                'typeOf' => ''
+            ];
         }
-        if ($this->reference[$realName]=='') {
-            $this->reference[$realName] = $minifiedName;
+        if ($this->reference[$realName]['html']=='') {
+            $this->reference[$realName] = [
+                'html' => $minifiedName,
+                'css' => $prefixer.$minifiedName,
+                'typeOf' => $typeOf
+            ];
             return;
         }
-        $this->reference[$realName] .= ' '.$minifiedName;
+        $this->reference[$realName] = [
+            'html' => $this->reference[$realName]['html'].' '.$minifiedName,
+            'css' => $this->reference[$realName]['css'].$prefixer.$minifiedName,
+            'typeOf' => $typeOf
+        ];
         return;
     }
 
