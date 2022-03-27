@@ -159,6 +159,14 @@ class CSSBuildManager {
              * given to the selector of the same name
              */
             foreach ($this->registrar as $BminifiedName => $BselectorObj) {
+
+                /**
+                 * @TODO: Need to consider pseudoclasses
+                 * We have updated the selector model to automatically
+                 * remove the pseudo class from the selector name,
+                 * hence the following comparison might not be always
+                 * true
+                 */
                 if ($AselectorObj->realName==$BselectorObj->realName) {
                     foreach ($BselectorObj->rules as $property => $value) {
                         # Recording each matching rules to consolidate later
