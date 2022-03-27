@@ -1,6 +1,7 @@
 <?php
 
 namespace Kenjiefx\VentaCss\Build\HTML;
+use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 
 class FileSys
 {
@@ -11,6 +12,19 @@ class FileSys
         array $closureArgs = null
         )
     {
+        try {
+            if (!is_dir($dirPath)) {
+                throw new \Exception(
+                    'Unable to traverse through '.$dirPath.
+                    ' Either the path is not a directory or non-existent'
+                );
+
+            }
+        } catch (\Exception $e) {
+            CoutStreamer::cout('FileSys::Exception: '.$e->getMessage(),'error');
+            exit();
+        }
+
         $dirs = scandir($dirPath);
         foreach ($dirs as $dir) {
             if ($dir==='.'||$dir==='..') continue;

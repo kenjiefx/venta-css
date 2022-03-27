@@ -22,7 +22,7 @@ class ReversionHandler {
                 );
             }
         } catch (\Exception $e) {
-            CoutStreamer::cout("Error {$e->getMessage()}",'error');
+            CoutStreamer::cout("Error: {$e->getMessage()}",'error');
             exit();
         }
         $this->argv = $argv;
@@ -47,7 +47,7 @@ class ReversionHandler {
             $pullDir = $this->venta->getBackend().$dir;
 
             FileSys::clear($pullDir);
-            
+
             FileSys::traverse($this->venta->getFrontend().$dir,function(
                 $filePath,
                 $fileName,
@@ -61,6 +61,35 @@ class ReversionHandler {
                 }
                 copy($filePath,$closureArgs['pullDir'].'/'.$fileName);
             },['pullDir'=>$pullDir]);
+        }
+
+
+        public function push(
+            $dirName = null
+            )
+        {
+            $dir = $dirName ?? '/';
+
+            FileSys::traverse($this->venta->getBackend().$dir,function(
+                $filePath,
+                $fileName,
+                $fileExtension,
+                $closureArgs
+            ){
+
+                if ($fileName==='__venta.css.json') return;
+                if ($fileName==='__venta.map.json') return;
+                if ($fileExtension==='dir') {
+                    $puller = new ReversionHandler($this->argv);
+                    $puller->push('/'.$fileName);
+                    return;
+                }
+                copy($filePath,$closureArgs['frontEnd'].'/'.$fileName);
+
+            },['frontEnd'=>$this->venta->getFrontend().$dir,'backEnd'=>$this->venta->getBackend().$dir]);
+
+            CoutStreamer::cout('Reverting build directory: '.$this->venta->getFrontEnd().$dir.'...');
+
         }
 
 

@@ -9,12 +9,17 @@ use \Kenjiefx\VentaCss\Build\HTML\FileSys;
 class HTMLBuilderManager {
 
     private Venta $venta;
+    private array $usables;
+    private array $compiled;
 
     public function __construct(
         Venta $venta
         )
     {
         $this->venta = $venta;
+        $this->usables = [];
+        $this->compiled = [];
+        $this->getCompiledCss();
     }
 
     public function build()
@@ -28,7 +33,7 @@ class HTMLBuilderManager {
             if ($fileExtension==='html'||$fileExtension==='htm'||$fileExtension==='php') {
                 require_once __dir__.'/simple_html_dom.php';
                 $dom = file_get_html($filePath);
-                $references = json_decode(file_get_contents($closureArgs['backEnd'].'/venta/css.json'),TRUE);
+                $references = json_decode(file_get_contents($closureArgs['backEnd'].'/venta/__venta.css.json'),TRUE);
 
                 foreach ($references as $realName => $minifiedName) {
                     if ($realName==='*') continue;
@@ -51,6 +56,7 @@ class HTMLBuilderManager {
                         $element->removeClass($realName);
                         $element->addClass($minifiedName);
                         $element->removeClass('1');
+                        $this->addToUsables($minifiedName);
                     }
                 }
 
@@ -58,6 +64,30 @@ class HTMLBuilderManager {
 
             }
         },['frontEnd'=>$this->venta->getFrontend(),'backEnd'=>$this->venta->getBackend()]);
+
+        $this->createAppCss();
+
+
+    }
+
+    private function getCompiledCss()
+    {
+        $this->compiled = json_decode(file_get_contents($this->venta->getBackend().'/venta/__venta.map.json'),TRUE);
+    }
+
+    private function addToUsables(
+        string $minifiedName
+        )
+    {
+        /**
+         * @TODO Create a way to only export css that has been used throughout the project
+         */
+
+    }
+
+    private function createAppCss()
+    {
+        
     }
 
 }

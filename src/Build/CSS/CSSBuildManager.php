@@ -306,6 +306,7 @@ class CSSBuildManager {
             if (empty($selectorObj->rules)) {
                 continue;
             }
+
             $forExport[$minifiedName] = $selectorObj->rules;
         }
         return $forExport;
@@ -362,8 +363,12 @@ class CSSBuildManager {
     public function release()
     {
         file_put_contents(
-            $this->venta->getBackend().'/venta/css.json',
+            $this->venta->getBackend().'/venta/__venta.css.json',
             json_encode($this->reference)
+        );
+        file_put_contents(
+            $this->venta->getBackend().'/venta/__venta.map.json',
+            json_encode($this->export())
         );
     }
 
