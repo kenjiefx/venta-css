@@ -49,15 +49,19 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
+        // echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
+
         CoutStreamer::cout('Compressing class names...');
         $this->reduce();
+
         $this->sortRegistrar();
+        // echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
+
         $this->compile();
 
         CoutStreamer::cout('Saving venta/app.css...');
         $this->release();
 
-        // echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
         // echo json_encode($this->compiled).PHP_EOL.PHP_EOL;
         // echo json_encode($this->reference).PHP_EOL.PHP_EOL;
         // echo json_encode($this->export()).PHP_EOL.PHP_EOL;
@@ -139,6 +143,7 @@ class CSSBuildManager {
     {
         $registrar = $this->registrar;
         $reduced = [];
+
         foreach ($registrar as $AminifiedName => $AselectorObj) {
 
             /**
@@ -146,8 +151,15 @@ class CSSBuildManager {
              * same selector has already been recorded.
              */
             $isExisting = false;
+
+            $pseudoAggregatedName = null;
+
             foreach ($reduced as $RminifiedName => $RselectorObj) {
                 if ($RselectorObj->realName===$AselectorObj->realName) {
+                    if ($RselectorObj->hasPseudo) {
+                        if (!$AselectorObj->hasPseudo) continue;
+                        if ($RselectorObj->pseudoClass!==$AselectorObj->pseudoClass) continue;
+                    }
                     $isExisting = true;
                     break;
                 }
@@ -162,25 +174,32 @@ class CSSBuildManager {
              * given to the selector of the same name
              */
             foreach ($this->registrar as $BminifiedName => $BselectorObj) {
-
-                /**
-                 * @TODO: Need to consider pseudoclasses
-                 * We have updated the selector model to automatically
-                 * remove the pseudo class from the selector name,
-                 * hence the following comparison might not be always
-                 * true
-                 */
+                if ($AselectorObj->hasPseudo) {
+                  if (!$BselectorObj->hasPseudo) continue;
+                  if ($AselectorObj->pseudoClass!==$BselectorObj->pseudoClass){
+                      if (null===$BselectorObj->pseudoAggregatedName) {
+                          $pseudoAggregatedName = Utils::createClassName($this->registrar);
+                      } else {
+                          $pseudoAggregatedName = $BselectorObj->pseudoAggregatedName;
+                      }
+                    continue;
+                  };
+                }
                 if ($AselectorObj->realName==$BselectorObj->realName) {
                     foreach ($BselectorObj->rules as $property => $value) {
                         # Recording each matching rules to consolidate later
                         $matchedRules[$property] = $value;
                     }
                 }
+
             }
 
             foreach ($matchedRules as $property => $value) {
                 $AselectorObj->rules[$property] = $value;
             }
+
+            $AselectorObj->pseudoAggregatedName = $pseudoAggregatedName;
+
 
             $reduced[$AminifiedName] = $AselectorObj;
         }
@@ -209,7 +228,8 @@ class CSSBuildManager {
                 $selectorObj->realName,
                 '',
                 $selectorObj->prefixer,
-                $selectorObj->typeOf
+                $selectorObj->typeOf,
+                $selectorObj->pseudoAggregatedName
             );
 
             $matchingRules   = [];
@@ -228,15 +248,17 @@ class CSSBuildManager {
                  */
                 if ($CselectorObj->typeOf!==$selectorObj->typeOf) continue;
 
-                if ($CselectorObj->hasPseudo)
+
+                if ($CselectorObj->hasPseudo||$selectorObj->hasPseudo)
                 {
+                    if (!$selectorObj->hasPseudo) continue;
+                    if (!$CselectorObj->hasPseudo) continue;
                     if ($CselectorObj->pseudoClass!==$selectorObj->pseudoClass) continue;
                 }
 
                 if (null!==$CselectorObj->childOf&&null!==$selectorObj->childOf) {
                     if ($CselectorObj->childOf->realName!==$selectorObj->childOf->realName) continue;
                 }
-
 
                 $matchingRulesCount = 0;
 
@@ -267,7 +289,8 @@ class CSSBuildManager {
                             $selectorObj->realName,
                             $CminifiedName,
                             $CselectorObj->prefixer,
-                            $CselectorObj->typeOf
+                            $CselectorObj->typeOf,
+                            $CselectorObj->pseudoAggregatedName
                         );
                         $toCompile = false;
                         continue;
@@ -296,7 +319,8 @@ class CSSBuildManager {
                     $selectorObj->realName,
                     $proxySelector->minifiedName,
                     $proxySelector->prefixer,
-                    $proxySelector->typeOf
+                    $proxySelector->typeOf,
+                    $selectorObj->pseudoAggregatedName
                 );
             }
 
@@ -306,7 +330,8 @@ class CSSBuildManager {
                         $selectorObj->realName,
                         $minifiedName,
                         $selectorObj->prefixer,
-                        $selectorObj->typeOf
+                        $selectorObj->typeOf,
+                        $selectorObj->pseudoAggregatedName
                     );
                     $this->compiled[$minifiedName] = $selectorObj;
                 }
@@ -318,7 +343,8 @@ class CSSBuildManager {
                     $selectorObj->realName,
                     $minifiedName,
                     $selectorObj->prefixer,
-                    $selectorObj->typeOf
+                    $selectorObj->typeOf,
+                    $selectorObj->pseudoAggregatedName
                 );
                 $this->compiled[$minifiedName] = $selectorObj;
             }
@@ -331,7 +357,11 @@ class CSSBuildManager {
     {
         $forExport = [];
         foreach ($this->compiled as $minifiedName => $selectorObj) {
-            $minifiedName = $selectorObj->prefixer.$minifiedName;
+            if ($selectorObj->pseudoAggregatedName!==null) {
+                $minifiedName = $selectorObj->prefixer.$selectorObj->pseudoAggregatedName;
+            } else {
+                $minifiedName = $selectorObj->prefixer.$minifiedName;
+            }
             if ($selectorObj->hasPseudo) {
                 $forExport[$minifiedName.$selectorObj->pseudoSeparator.$selectorObj->pseudoClass] = $selectorObj->rules;
                 continue;
@@ -370,9 +400,13 @@ class CSSBuildManager {
         string $realName,
         string $minifiedName,
         string $prefixer,
-        string $typeOf
+        string $typeOf,
+        string $pseudoAggregatedName = null
         )
     {
+        if (null!==$pseudoAggregatedName) {
+            $minifiedName = $pseudoAggregatedName;
+        }
         if (!isset($this->reference[$realName])) {
             $this->reference[$realName] = [
                 'html' => '',

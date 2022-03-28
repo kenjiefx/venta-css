@@ -18,6 +18,7 @@ class SelectorModel {
     public bool $hasPseudo;
     public string|null $pseudoClass;
     public string|null $pseudoSeparator;
+    public string|null $pseudoAggregatedName;
 
     public function __construct(
         string $realName
@@ -28,6 +29,7 @@ class SelectorModel {
         $this->hasPseudo = false;
         $this->pseudoClass = null;
         $this->pseudoSeparator = null;
+        $this->pseudoAggregatedName = null;
         $this->parentOf = null;
         $this->childOf = null;
         $this->parseType();

@@ -57,14 +57,14 @@ class BuildManager implements BuilderFacadeInterface {
         $originalFileSize = FileSys::getSize($this->venta->getFrontend().'/venta/app.css');
 
         $this->CSSBuilder->build();
-        $this->HTMLBuilder->build();
+        # $this->HTMLBuilder->build();
 
         CoutStreamer::cout('Successfully compressed files!','success');
 
         $newFileSize = FileSys::getSize(ROOT.'/'.$this->namespace.'/venta/app.css');
         CoutStreamer::cout('Total build time: '.(microtime(true)-$timeStart).' seconds');
         CoutStreamer::cout('CSS reduced size from '.$originalFileSize.' → '.$newFileSize);
-        
+
     }
 
 

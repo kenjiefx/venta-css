@@ -59,6 +59,9 @@ class ReversionHandler {
                     $puller->pull('/'.$fileName);
                     return;
                 }
+                if (!file_exists($closureArgs['pullDir'].'/')) {
+                    mkdir($closureArgs['pullDir'].'/');
+                }
                 copy($filePath,$closureArgs['pullDir'].'/'.$fileName);
             },['pullDir'=>$pullDir]);
         }
