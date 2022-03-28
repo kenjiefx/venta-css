@@ -32,17 +32,9 @@ class VentaCli {
                 $config->create();
                 break;
             case 'revert':
-                $buildDir = ROOT.'/'.$this->argv[2];
-                try {
-                    if (!file_exists($buildDir)) {
-                        throw new \Exception('Build directory /'.$this->argv[2].' not found', 1);
-                    }
-                } catch (\Exception $e) {
-                    CoutStreamer::cout('Error: '.$e->getMessage(),'error');
-                    exit();
-                }
-                $reversion = new ReversionHandler($this->argv[2]);
+                $reversion = new ReversionHandler($this->argv);
                 $reversion->push();
+                CoutStreamer::cout('Reverted successfully!','success');
                 break;
             case '--v':
                 CoutStreamer::cout('VentaCSS Version 1.0.0');

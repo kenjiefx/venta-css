@@ -13,6 +13,8 @@
 .user-profile .photo {
     width: 24px;
     height: 24px;
+    background-color: #282828;
+    color: white;
 }
 
 .site-title {

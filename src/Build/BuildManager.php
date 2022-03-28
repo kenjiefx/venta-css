@@ -3,6 +3,7 @@
 namespace Kenjiefx\VentaCss\Build;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Venta\Venta;
+use \Kenjiefx\VentaCss\Build\HTML\FileSys;
 use \Kenjiefx\VentaCss\Build\BuilderFacadeInterface;
 use \Kenjiefx\VentaCss\Build\CSS\CSSBuilderFacade;
 use \Kenjiefx\VentaCss\Build\HTML\HTMLBuilderFacade;
@@ -52,8 +53,18 @@ class BuildManager implements BuilderFacadeInterface {
 
     public function build()
     {
+        $timeStart        = microtime(true);
+        $originalFileSize = FileSys::getSize($this->venta->getFrontend().'/venta/app.css');
+
         $this->CSSBuilder->build();
         $this->HTMLBuilder->build();
+
+        CoutStreamer::cout('Successfully compressed files!','success');
+
+        $newFileSize = FileSys::getSize(ROOT.'/'.$this->namespace.'/venta/app.css');
+        CoutStreamer::cout('Total build time: '.(microtime(true)-$timeStart).' seconds');
+        CoutStreamer::cout('CSS reduced size from '.$originalFileSize.' → '.$newFileSize);
+        
     }
 
 

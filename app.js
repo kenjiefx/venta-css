@@ -2,7 +2,7 @@ const express = require ('express')
 const app = express()
 const port = 3000
 
-app.use(express.static('docs'))
+app.use(express.static('test'))
 
 app.use(function(req, res){
     res.status(404)
