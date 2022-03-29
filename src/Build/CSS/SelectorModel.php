@@ -7,29 +7,24 @@ class SelectorModel {
 
     public string $realName;
     public string $minifiedName;
-
-    public string $prefixer;
     public string $typeOf;
-
-    public SelectorModel|null $parentOf;
-    public SelectorModel|null $childOf;
 
     # Pseudo Class
     public bool $hasPseudo;
     public string|null $pseudoClass;
     public string|null $pseudoSeparator;
 
+    public bool $toRender;
+
     public function __construct(
         string $realName
         )
     {
         $this->realName = $realName;
-        $this->prefixer = '';
         $this->hasPseudo = false;
         $this->pseudoClass = null;
         $this->pseudoSeparator = null;
-        $this->parentOf = null;
-        $this->childOf = null;
+        $this->toRender = true;
         $this->parseType();
     }
 
@@ -90,12 +85,10 @@ class SelectorModel {
             $this->registerPseudos('::');
         }
         if (str_contains($this->realName,'.')) {
-            $this->prefixer = '.';
             $this->typeOf = 'class';
             return;
         }
         if (str_contains($this->realName,'#')) {
-            $this->prefixer = '#';
             $this->typeOf = 'id';
             return;
         }

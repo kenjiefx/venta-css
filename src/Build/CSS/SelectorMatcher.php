@@ -20,7 +20,7 @@ class SelectorMatcher {
         SelectorModel $B
         )
     {
-        return ($A->hasPseudo&&$B->hasPseudo);
+        return ($A->hasPseudo===$B->hasPseudo);
     }
 
     public static function PseudoClassNames(
@@ -29,6 +29,16 @@ class SelectorMatcher {
         )
     {
         return ($A->pseudoClass===$B->pseudoClass);
+    }
+
+    public static function Parents(
+        SelectorModel $A,
+        SelectorModel $B
+        )
+    {
+        if ($A->childOf===null&&$B->childOf===null) return true;
+        if ($A->childOf===null||$B->childOf===null) return false;
+        return ($A->childOf->realName===$B->childOf->realName);
     }
 
 

@@ -11,22 +11,31 @@
   font-weight:bold;
 }
 
-h1.link-primary {
+.link-primary {
   font-size: 11px;
+}
+
+.test {
+  display: flex;
+}
+
+.alive {
+    display: flex;
+}
+
+.half {
+    font-weight:bold;
 }
 
 .test {
   align-items: center;
 }
 
-.test, .make {
-    font-weight:200;
+.flex {
+    display: flex;
 }
 
-.test, .hello {
-    margin-left: 0;
-}
-
-.color {
-  color: #2196f3;
+.rant {
+    display: flex;
+    font-weight: 50000;
 }
