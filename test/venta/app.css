@@ -11,8 +11,20 @@
   font-weight:bold;
 }
 
+h1.link-primary {
+  font-size: 11px;
+}
+
 .test {
   align-items: center;
+}
+
+.test, .make {
+    font-weight:200;
+}
+
+.test, .hello {
+    margin-left: 0;
 }
 
 .color {

@@ -8,6 +8,7 @@ use \Kenjiefx\VentaCss\Build\CSS\CSSModel;
 use \Kenjiefx\VentaCss\Build\CSS\ClassModel;
 use \Kenjiefx\VentaCss\Build\CSS\SelectorModel;
 use \Kenjiefx\VentaCss\Build\CSS\Utils;
+use \Kenjiefx\VentaCss\Build\CSS\SelectorMatcher as Matching;
 
 class CSSBuildManager {
 
@@ -15,7 +16,8 @@ class CSSBuildManager {
     private CSSModel $ParsedCSS;
     private CSSModel $RefinedCss;
     private string $css;
-    private array $registrar;
+    private array $theRegistrar;
+    private array $theTracker;
     private array $compiled;
     private array $reference;
 
@@ -26,7 +28,8 @@ class CSSBuildManager {
         $this->venta = $venta;
         $this->ParsedCSS = new CSSModel;
         $this->RefinedCss = new CSSModel;
-        $this->registrar = [];
+        $this->theRegistrar = [];
+        $this->theTracker = [];
         $this->compiled = [];
         $this->reference = [];
     }
@@ -49,13 +52,13 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
-        // echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
-
         CoutStreamer::cout('Compressing class names...');
         $this->reduce();
 
         $this->sortRegistrar();
-        // echo json_encode($this->registrar).PHP_EOL.PHP_EOL;
+
+        echo json_encode($this->theRegistrar).PHP_EOL.PHP_EOL;
+        exit();
 
         $this->compile();
 
@@ -98,7 +101,6 @@ class CSSBuildManager {
             foreach ($selectorFamily as $selector) {
 
                 $selectorObj = new SelectorModel(trim($selector));
-                $selectorObj->minifyName($this->registrar);
                 $selectorObj->rules = [];
 
                 # Registering parent name and child name
@@ -115,10 +117,9 @@ class CSSBuildManager {
                 $childOf = trim($selector);
 
                 # Saving the Selector object to the Registrar array
-                $this->registrar[$selectorObj->minifiedName] = $selectorObj;
+                array_push($this->theRegistrar,$selectorObj);
 
                 $familyMemberIterator++;
-
             }
         }
     }
@@ -141,70 +142,40 @@ class CSSBuildManager {
      */
     public function reduce()
     {
-        $registrar = $this->registrar;
+        $TheRegistrar = $this->theRegistrar;
         $reduced = [];
 
-        foreach ($registrar as $AminifiedName => $AselectorObj) {
+        foreach ($TheRegistrar as $A) {
 
             /**
              * Before we save collate existing rules, we will check if the
              * same selector has already been recorded.
+             *
+             * The rules for two selectors to be considered as the same
+             * are the following
+             * 1. They must have the same pseudo type
              */
             $isExisting = false;
+            $A->minifyName($this->theTracker);
 
-            $pseudoAggregatedName = null;
-
-            foreach ($reduced as $RminifiedName => $RselectorObj) {
-                if ($RselectorObj->realName===$AselectorObj->realName) {
-                    if ($RselectorObj->hasPseudo) {
-                        if (!$AselectorObj->hasPseudo) continue;
-                        if ($RselectorObj->pseudoClass!==$AselectorObj->pseudoClass) continue;
-                    }
-                    $isExisting = true;
-                    break;
-                }
-            }
-
-            if ($isExisting) continue;
-
-            $matchedRules = [];
-
-            /**
-             * On this part of the code, we collate all the existing rules
-             * given to the selector of the same name
-             */
-            foreach ($this->registrar as $BminifiedName => $BselectorObj) {
-                if ($AselectorObj->hasPseudo) {
-                  if (!$BselectorObj->hasPseudo) continue;
-                  if ($AselectorObj->pseudoClass!==$BselectorObj->pseudoClass){
-                      if (null===$BselectorObj->pseudoAggregatedName) {
-                          $pseudoAggregatedName = Utils::createClassName($this->registrar);
-                      } else {
-                          $pseudoAggregatedName = $BselectorObj->pseudoAggregatedName;
-                      }
+            foreach ($reduced as $key => $R) {
+                if (Matching::RealSelectorNames($A,$R))
+                    $A->setMinifiedName($R->minifiedName);
+                if (!Matching::RealSelectorNames($A,$R))
                     continue;
-                  };
-                }
-                if ($AselectorObj->realName==$BselectorObj->realName) {
-                    foreach ($BselectorObj->rules as $property => $value) {
-                        # Recording each matching rules to consolidate later
-                        $matchedRules[$property] = $value;
-                    }
-                }
-
+                if (!Matching::PseudoClassNames($A,$R))
+                    continue;
+                foreach ($A->rules as $property => $value)
+                    $reduced[$key]->rules[$property] = $value;
+                $isExisting = true;
+                break;
             }
 
-            foreach ($matchedRules as $property => $value) {
-                $AselectorObj->rules[$property] = $value;
-            }
-
-            $AselectorObj->pseudoAggregatedName = $pseudoAggregatedName;
-
-
-            $reduced[$AminifiedName] = $AselectorObj;
+            if (!$isExisting)
+                array_push($reduced,$A);
         }
 
-        $this->registrar = $reduced;
+        $this->theRegistrar = $reduced;
 
     }
 
@@ -222,14 +193,14 @@ class CSSBuildManager {
          */
         $toCompile = true;
 
-        foreach ($this->registrar as $minifiedName => $selectorObj) {
+        foreach ($this->theRegistrar as $minifiedName => $selectorObj) {
 
             $this->addReference(
                 $selectorObj->realName,
                 '',
                 $selectorObj->prefixer,
                 $selectorObj->typeOf,
-                $selectorObj->pseudoAggregatedName
+                $selectorObj->groupName
             );
 
             $matchingRules   = [];
@@ -290,7 +261,7 @@ class CSSBuildManager {
                             $CminifiedName,
                             $CselectorObj->prefixer,
                             $CselectorObj->typeOf,
-                            $CselectorObj->pseudoAggregatedName
+                            $CselectorObj->groupName
                         );
                         $toCompile = false;
                         continue;
@@ -312,7 +283,7 @@ class CSSBuildManager {
              */
             if (count($unMatchedRules)>0&&$hasMatchingRule===true) {
                 $proxySelector = new SelectorModel($selectorObj->realName);
-                $proxySelector->minifyName($this->registrar);
+                $proxySelector->minifyName($this->theRegistrar);
                 $proxySelector->rules = $unMatchedRules;
                 $this->compiled[$proxySelector->minifiedName] = $proxySelector;
                 $this->addReference(
@@ -320,7 +291,7 @@ class CSSBuildManager {
                     $proxySelector->minifiedName,
                     $proxySelector->prefixer,
                     $proxySelector->typeOf,
-                    $selectorObj->pseudoAggregatedName
+                    $selectorObj->groupName
                 );
             }
 
@@ -331,7 +302,7 @@ class CSSBuildManager {
                         $minifiedName,
                         $selectorObj->prefixer,
                         $selectorObj->typeOf,
-                        $selectorObj->pseudoAggregatedName
+                        $selectorObj->groupName
                     );
                     $this->compiled[$minifiedName] = $selectorObj;
                 }
@@ -344,7 +315,7 @@ class CSSBuildManager {
                     $minifiedName,
                     $selectorObj->prefixer,
                     $selectorObj->typeOf,
-                    $selectorObj->pseudoAggregatedName
+                    $selectorObj->groupName
                 );
                 $this->compiled[$minifiedName] = $selectorObj;
             }
@@ -357,8 +328,8 @@ class CSSBuildManager {
     {
         $forExport = [];
         foreach ($this->compiled as $minifiedName => $selectorObj) {
-            if ($selectorObj->pseudoAggregatedName!==null) {
-                $minifiedName = $selectorObj->prefixer.$selectorObj->pseudoAggregatedName;
+            if ($selectorObj->groupName!==null) {
+                $minifiedName = $selectorObj->prefixer.$selectorObj->groupName;
             } else {
                 $minifiedName = $selectorObj->prefixer.$minifiedName;
             }
@@ -385,14 +356,15 @@ class CSSBuildManager {
     {
         $scraped = [];
         $sorted = [];
-        foreach ($this->registrar as $minifiedName => $selectorObj) {
-            $scraped[$minifiedName] = $selectorObj->rules;
+        foreach ($this->theRegistrar as $key => $Sobj) {
+            $scraped[$key.'x'] = $Sobj->rules;
         }
         asort($scraped);
-        foreach ($scraped as $minifiedName => $value) {
-            $sorted[$minifiedName] = $this->registrar[$minifiedName];
+        foreach ($scraped as $key => $value) {
+            $rKey = intval($key[0]);
+            array_push($sorted,$this->theRegistrar[$rKey]);
         }
-        $this->registrar = $sorted;
+        $this->theRegistrar = $sorted;
     }
 
 
@@ -401,11 +373,11 @@ class CSSBuildManager {
         string $minifiedName,
         string $prefixer,
         string $typeOf,
-        string $pseudoAggregatedName = null
+        string $groupName = null
         )
     {
-        if (null!==$pseudoAggregatedName) {
-            $minifiedName = $pseudoAggregatedName;
+        if (null!==$groupName) {
+            $minifiedName = $groupName;
         }
         if (!isset($this->reference[$realName])) {
             $this->reference[$realName] = [
