@@ -52,6 +52,8 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
+
+
         CoutStreamer::cout('Compressing class names...');
         $this->reduce();
         $this->sortRegistrar();
@@ -133,7 +135,8 @@ class CSSBuildManager {
 
         foreach ($this->theRegistrar as $A) {
             $hasMatchingRule = false;
-            foreach ($this->theCompiled as $C) {
+
+            foreach ($this->theCompiled as $key => $C) {
                 if (Matching::RealSelectorNames($A,$C))
                     continue;
                 if (!Matching::HasPseudoSelectors($A,$C))
@@ -167,7 +170,6 @@ class CSSBuildManager {
                         realName: $A->realName,
                         minifiedName: $C->minifiedName
                     );
-                break;
 
             }
 
@@ -190,11 +192,11 @@ class CSSBuildManager {
         $scraped = [];
         $sorted = [];
         foreach ($this->theRegistrar as $key => $Sobj) {
-            $scraped[$key.'x'] = $Sobj->rules;
+            $scraped['x'.$key] = $Sobj->rules;
         }
         asort($scraped);
         foreach ($scraped as $key => $value) {
-            $rKey = intval($key[0]);
+            $rKey = intval(substr($key,1));
             array_push($sorted,$this->theRegistrar[$rKey]);
         }
         $this->theRegistrar = $sorted;
