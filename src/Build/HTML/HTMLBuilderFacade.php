@@ -7,17 +7,17 @@ use \Kenjiefx\VentaCss\Build\HTML\HTMLBuilderManager;
 
 class HTMLBuilderFacade {
 
-    private string $namespace;
+    private string|null $namespace;
     private Venta $venta;
     private HTMLBuilderManager $htmlBuilderManager;
 
     public function __construct(
-        string $namespace,
+        string|null $namespace,
         Venta $venta
         )
     {
-        $this->namespace = $namespace;
         $this->venta = $venta;
+        $this->namespace = $this->venta->namespace;
         $this->htmlBuilderManager = new HTMLBuilderManager($this->venta);
     }
 
@@ -25,6 +25,7 @@ class HTMLBuilderFacade {
     {
         CoutStreamer::cout('Rendering new selectors in HTML...');
         $this->htmlBuilderManager->build();
+        $this->htmlBuilderManager->createAppCss();
     }
 
 
