@@ -52,16 +52,10 @@ class CSSBuildManager {
             $this->register($selector,$rules);
         }
 
-
         CoutStreamer::cout('Compressing class names...');
         $this->reduce();
-
         $this->sortRegistrar();
-
         $this->compile();
-        echo json_encode($this->theCompiled).PHP_EOL.PHP_EOL;
-        echo json_encode($this->theReference).PHP_EOL.PHP_EOL;
-        exit();
 
         CoutStreamer::cout('Saving venta/app.css...');
         $this->release();
@@ -188,32 +182,7 @@ class CSSBuildManager {
 
     }
 
-    public function export()
-    {
-        $forExport = [];
-        foreach ($this->compiled as $minifiedName => $selectorObj) {
-            if ($selectorObj->groupName!==null) {
-                $minifiedName = $selectorObj->prefixer.$selectorObj->groupName;
-            } else {
-                $minifiedName = $selectorObj->prefixer.$minifiedName;
-            }
-            if ($selectorObj->hasPseudo) {
-                $forExport[$minifiedName.$selectorObj->pseudoSeparator.$selectorObj->pseudoClass] = $selectorObj->rules;
-                continue;
-            }
-            if (null!==$selectorObj->childOf) {
-                $parentMinifiedName = $this->reference[$selectorObj->childOf->realName]['css'];
-                $forExport[$parentMinifiedName.' '.$minifiedName] = $selectorObj->rules;
-                continue;
-            }
-            if (empty($selectorObj->rules)) {
-                continue;
-            }
 
-            $forExport[$minifiedName] = $selectorObj->rules;
-        }
-        return $forExport;
-    }
 
 
     private function sortRegistrar()
@@ -253,16 +222,30 @@ class CSSBuildManager {
         return $this->references;
     }
 
+    public function export()
+    {
+        $exported = [];
+        foreach ($this->theCompiled as $selectorObj) {
+            $finalName = $selectorObj->minifiedName;
+            if ($selectorObj->hasPseudo)
+                $finalName .= $selectorObj->pseudoSeparator.$selectorObj->pseudoClass;
+            foreach ($selectorObj->rules as $prop => $val)
+                if (null!==$val)
+                    $exported[$selectorObj->minifiedName]['css'][$finalName][$prop] = $val;
+        }
+        return $exported;
+    }
+
     public function release()
     {
 
         file_put_contents(
             $this->venta->getBackend().'/venta/__venta.css.json',
-            json_encode($this->reference)
+            json_encode($this->export())
         );
         file_put_contents(
             $this->venta->getBackend().'/venta/__venta.map.json',
-            json_encode($this->export())
+            json_encode($this->theReference)
         );
     }
 

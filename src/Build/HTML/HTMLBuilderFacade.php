@@ -25,6 +25,7 @@ class HTMLBuilderFacade {
     {
         CoutStreamer::cout('Rendering new selectors in HTML...');
         $this->htmlBuilderManager->build();
+        $this->htmlBuilderManager->createAppCss();
     }
 
 

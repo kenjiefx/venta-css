@@ -57,7 +57,7 @@ class BuildManager implements BuilderFacadeInterface {
         $originalFileSize = FileSys::getSize($this->venta->getFrontend().'/venta/app.css');
 
         $this->CSSBuilder->build();
-        # $this->HTMLBuilder->build();
+        $this->HTMLBuilder->build();
 
         CoutStreamer::cout('Successfully compressed files!','success');
 
