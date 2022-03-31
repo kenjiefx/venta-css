@@ -66,12 +66,14 @@ class HTMLBuilderManager {
         $css = '';
         $lookup = json_decode(file_get_contents($this->venta->getBackend().'/venta/__venta.css.json'),TRUE);
         foreach ($this->usables as $htmlRef) {
-            foreach ($lookup[$htmlRef]['css'] as $selector => $rules) {
-                $css = $css.'.'.$selector.' {';
-                foreach ($rules as $prop => $val) {
-                    $css = $css.$prop.':'.$val.';';
+            if (isset($lookup[$htmlRef])) {
+                foreach ($lookup[$htmlRef]['css'] as $selector => $rules) {
+                    $css = $css.'.'.$selector.' {';
+                    foreach ($rules as $prop => $val) {
+                        $css = $css.$prop.':'.$val.';';
+                    }
+                    $css = $css.'} ';
                 }
-                $css = $css.'} ';
             }
         }
         file_put_contents($this->venta->getFrontend().'/venta/app.css',$css);
