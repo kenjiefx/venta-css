@@ -21,9 +21,12 @@ class HTMLBuilderManager {
         $this->compiled = [];
     }
 
-    public function build()
+    public function build(
+        $dirPath = null
+        )
     {
-        FileSys::traverse($this->venta->getFrontend(),function(
+        $dir = $dirPath ?? '/';
+        FileSys::traverse($this->venta->getFrontend().$dir,function(
             $filePath,
             $fileName,
             $fileExtension,
@@ -48,6 +51,11 @@ class HTMLBuilderManager {
 
                 $dom->save($filePath);
             }
+
+            if ($fileExtension==='dir') {
+                $this->build('/'.$fileName);
+            }
+
         },['frontEnd'=>$this->venta->getFrontend(),'backEnd'=>$this->venta->getBackend()]);
     }
 
