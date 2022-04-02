@@ -57,6 +57,12 @@ class CSSBuildManager {
         CoutStreamer::cout('Compressing class names...');
         $this->reduce();
         $this->sortRegistrar();
+
+        file_put_contents(
+            $this->venta->getBackend().'/venta/__venta.registry.json',
+            json_encode($this->theRegistrar)
+        );
+
         $this->compile();
 
         CoutStreamer::cout('Saving venta/app.css...');
@@ -251,6 +257,10 @@ class CSSBuildManager {
         file_put_contents(
             $this->venta->getBackend().'/venta/__venta.map.json',
             json_encode($this->theReference)
+        );
+        file_put_contents(
+            $this->venta->getBackend().'/venta/__venta.compiled.json',
+            json_encode($this->theCompiled)
         );
     }
 
