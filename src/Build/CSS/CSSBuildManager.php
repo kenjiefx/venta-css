@@ -167,6 +167,10 @@ class CSSBuildManager {
                     $hasMatchingRule = true;
                     $this->addReference(
                         realName: $A->realName,
+                        minifiedName: $A->minifiedName
+                    );
+                    $this->addReference(
+                        realName: $A->realName,
                         minifiedName: $C->minifiedName
                     );
                     array_push($this->theCompiled,$A);
