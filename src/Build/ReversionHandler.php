@@ -73,6 +73,7 @@ class ReversionHandler {
                 if ($fileName==='__venta.map.json') return;
                 if ($fileName==='__venta.compiled.json') return;
                 if ($fileName==='__venta.registry.json') return;
+                if ($fileName==='__venta.usables.json') return;
                 if ($fileExtension==='dir') {
                     $puller = new ReversionHandler($this->argv);
                     $puller->push('/'.$fileName);
