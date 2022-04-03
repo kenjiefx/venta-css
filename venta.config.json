@@ -1,1 +1,5 @@
-{"namespace":"test","ignore":[],"plugins":[]}
+{
+	"namespace": "test",
+	"ignore": [],
+	"extensions": ["ext.css"]
+}
