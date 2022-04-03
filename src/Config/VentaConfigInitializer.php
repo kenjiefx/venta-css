@@ -3,6 +3,7 @@
 namespace Kenjiefx\VentaCss\Config;
 use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Build\ReversionHandler;
+use \Kenjiefx\VentaCss\Exceptions\ConfigExceptions;
 
 class VentaConfigInitializer {
 
@@ -23,15 +24,32 @@ class VentaConfigInitializer {
         $path = ROOT.Self::CONFIG_PATH;
         try {
             if (!file_exists($path)) {
-                throw new \Exception(
-                    'Unable to find venta.config.json'
+                throw new ConfigExceptions();
+            }
+        } catch (\Exception $e) {
+            ConfigExceptions::notFound();
+        }
+
+        try {
+            $config = json_decode(
+                file_get_contents($path),
+                TRUE
+            );
+            if (json_last_error()!==JSON_ERROR_NONE) {
+                throw new ConfigExceptions(
+                    'Incorrect JSON Format'
+                );
+            }
+            if (!isset($config['namespace'])||trim($config['namespace'])==='') {
+                throw new ConfigExceptions(
+                    'Requires namespace'
                 );
             }
         } catch (\Exception $e) {
-            CoutStreamer::cout('Error: '.$e->getMessage(),'error');
-            exit();
+            ConfigExceptions::invalid($e->getMessage());
         }
-        return json_decode(file_get_contents($path),TRUE);
+
+        return $config;
     }
 
     private static function createApp (

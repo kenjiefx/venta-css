@@ -12,7 +12,6 @@ class HTMLBuilderFacade {
     private HTMLBuilderManager $htmlBuilderManager;
 
     public function __construct(
-        string|null $namespace,
         Venta $venta
         )
     {

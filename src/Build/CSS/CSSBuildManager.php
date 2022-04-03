@@ -15,7 +15,6 @@ class CSSBuildManager {
 
     private Venta $venta;
     private CSSModel $ParsedCSS;
-    private CSSModel $RefinedCss;
     private string $css;
     private array $theRegistrar;
     private array $theTracker;
@@ -27,8 +26,7 @@ class CSSBuildManager {
         )
     {
         $this->venta = $venta;
-        $this->ParsedCSS = new CSSModel;
-        $this->RefinedCss = new CSSModel;
+        $this->CSS = new CSSModel;
         $this->theRegistrar = [];
         $this->theTracker = [];
         $this->theCompiled = [];
@@ -37,45 +35,94 @@ class CSSBuildManager {
 
     public function build()
     {
-        # First, we set the raw CSS file: venta/app.css
-        $this->ParsedCSS->setRaw(
-            rawCss: $this->venta->getCssToBuild()
-        );
 
-        $this->chunk();
+        $this->getCss()
+             ->createChunks()
+             ->segregateNativeTokens()
+             ->sortNativeTokens()
+             ->registerTokens();
+        exit();
+             // ->createChunks()
+             // ->parseNonMediaQueries()
+             // ->sortNonMediaQueries()
+             // ->registerTokens()
+             // ->reduceTokens()
+             // ->sortToken()
+             // ->compileTokens()
+             // ->sortMediaQueries()
+             // ->dumpLogs();
 
-        # Next, we parse the raw CSS into an array
-        Utils::parseRawCss($this->ParsedCSS);
-
-        # Then, we sort the CSS array
-        $this->ParsedCSS->sort();
-
-        # Then, we register each of the CSS class
-        foreach ($this->ParsedCSS->export() as $selector => $rules) {
-            $this->register($selector,$rules);
-        }
-
-        CoutStreamer::cout('Compressing class names...');
-        $this->reduce();
-        $this->sortRegistrar();
-
-        file_put_contents(
-            $this->venta->getBackend().'/venta/__venta.registry.json',
-            json_encode($this->theRegistrar)
-        );
-
-        $this->compile();
-
-        $this->mediaQuery();
-
-        CoutStreamer::cout('Saving venta/app.css...');
-        $this->release();
-
-        // echo json_encode($this->Compiled).PHP_EOL.PHP_EOL;
-        // echo json_encode($this->reference).PHP_EOL.PHP_EOL;
-        // echo json_encode($this->export()).PHP_EOL.PHP_EOL;
+        // $this->chunk();
+        //
+        // # Next, we parse the raw CSS into an array
+        // Utils::parseRawCss($this->ParsedCSS);
+        //
+        // # Then, we sort the CSS array
+        // $this->ParsedCSS->sort();
+        //
+        // # Then, we register each of the CSS class
+        // foreach ($this->ParsedCSS->export() as $selector => $rules) {
+        //     $this->register($selector,$rules);
+        // }
+        //
+        // CoutStreamer::cout('Compressing class names...');
+        // $this->reduce();
+        // $this->sortRegistrar();
+        //
+        // file_put_contents(
+        //     $this->venta->getBackend().'/venta/__venta.registry.json',
+        //     json_encode($this->theRegistrar)
+        // );
+        //
+        // $this->compile();
+        //
+        // $this->mediaQuery();
+        //
+        // CoutStreamer::cout('Saving venta/app.css...');
+        // $this->release();
 
     }
+
+    private function getCss()
+    {
+        $this->CSS->setSource(
+            $this->venta->compileSources()
+        );
+        return $this;
+    }
+
+    private function createChunks()
+    {
+        $chunker = (new CSSChunker($this->CSS->getSource()))->init();
+        $this->CSS->setNativeChunk(
+            $chunker->getNativeBlocks()
+        );
+        return $this;
+    }
+
+
+    private function segregateNativeTokens()
+    {
+        Utils::segregateTokens($this->CSS);
+        return $this;
+    }
+
+    private function sortNativeTokens()
+    {
+        $this->CSS->sort();
+        return $this;
+    }
+
+    private function registerTokens()
+    {
+        foreach ($this->CSS->exportTokens() as $selector => $rules) {
+            $TOKEN = new TokenModel (trim($selector));
+            $TOKEN->rules = $rules;
+            array_push($this->theRegistrar,$TOKEN);
+        }
+    }
+
+
 
     private function chunk()
     {
@@ -109,14 +156,6 @@ class CSSBuildManager {
 
         foreach ($TheRegistrar as $A) {
 
-            /**
-             * Before we save collate existing rules, we will check if the
-             * same selector has already been recorded.
-             *
-             * The rules for two selectors to be considered as the same
-             * are the following
-             * 1. They must have the same pseudo type
-             */
             $isExisting = false;
             $A->minifyName($this->theTracker);
 

@@ -2,17 +2,18 @@
 
 namespace Kenjiefx\VentaCss;
 use \Kenjiefx\VentaCss\Cli\Registry;
-use \Kenjiefx\VentaCss\Cli\CoutStreamer;
+use \Kenjiefx\VentaCss\Cli\Console;
 use \Kenjiefx\VentaCss\Build\BuilderFacade;
 use \Kenjiefx\VentaCss\Build\ReversionHandler;
 use \Kenjiefx\VentaCss\Config\ConfigFacade;
 
-class VentaCli {
+class VentaCli extends Console {
 
     private array $argv;
 
     public function __construct(array $argv)
     {
+        parent::__construct();
         $this->argv = $argv;
         $this->call();
     }
@@ -23,8 +24,8 @@ class VentaCli {
         switch ($command) {
             case 'build':
                 $builder = new BuilderFacade($this->argv);
-                $reversion = new ReversionHandler($this->argv);
-                $reversion->pull();
+                // $reversion = new ReversionHandler($this->argv);
+                // $reversion->pull();
                 $builder->build();
                 break;
             case 'hook':
@@ -43,7 +44,9 @@ class VentaCli {
                 CoutStreamer::cout('VentaCSS Version 1.0.0');
                 break;
             default:
-                CoutStreamer::cout('Command not found. Need help?');
+                Console::out(
+                    'Command not found. Need help?'
+                );
                 break;
         }
     }

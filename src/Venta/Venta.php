@@ -1,8 +1,8 @@
 <?php
 
 namespace Kenjiefx\VentaCss\Venta;
-use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 use \Kenjiefx\VentaCss\Config\VentaConfigInitializer as Config;
+use \Kenjiefx\VentaCss\Exceptions\MissingComponentException;
 
 
 class Venta {
@@ -13,12 +13,10 @@ class Venta {
     private array $config;
     private array $extensions;
 
-    public function __construct(
-        string|null $namespace = null
-        )
+    public function __construct()
     {
-        $this->config = Config::load();
-        $this->namespace  = $namespace ?? $this->config['namespace'];
+        $this->config     = Config::load();
+        $this->namespace  = $this->config['namespace'];
         $this->extensions = $this->config['extensions'] ?? [];
         $this->frontend   = ROOT.'/'.$this->namespace;
         $this->backend    = ROOT.'/vnt/'.$this->namespace;
@@ -29,30 +27,21 @@ class Venta {
     {
         try {
             if (!file_exists($this->frontend)) {
-                throw new \Exception(
-                    'Build directory /'.$this->namespace.' not found'
+                throw new MissingComponentException(
+                    $this->frontend
                 );
             }
             if (!file_exists($this->backend)) {
-                throw new \Exception(
-                    'Build directory /'.$this->namespace.' not found'
+                throw new MissingComponentException(
+                    $this->backend
                 );
             }
         } catch (\Exception $e) {
-            CoutStreamer::cout($e->getMessage(),'error');
-            exit();
+            MissingComponentException::error($e->getMessage());
         }
     }
 
-    /**
-     * @throws Exception Unable to find build CSS
-     * When checking to see if the venta constant
-     * path $root/namespace/venta/app.css
-     * do not exist
-     *
-     * @return string - A CSS file content
-     */
-    public function getCssToBuild(): string
+    public function compileSources()
     {
         $extensions = $this->extensions;
         $css = '';

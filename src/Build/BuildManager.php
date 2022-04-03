@@ -12,8 +12,8 @@ use \Kenjiefx\VentaCss\Build\Compiler\Compiler;
 class BuildManager implements BuilderFacadeInterface {
 
     private string|null $namespace;
-    private CSSBuilderFacade $CSSBuilder;
-    private HTMLBuilderFacade $HTMLBuilder;
+    private CSSBuilderFacade $CSSBuilderFacade;
+    private HTMLBuilderFacade $HTMLBuilderFacade;
     private Compiler $Compiler;
     private int $startTime;
 
@@ -21,38 +21,38 @@ class BuildManager implements BuilderFacadeInterface {
         array $argv
         )
     {
-        $this->startTime = microtime(true);
-        $this->namespace = $argv[2] ?? null;
         $this->loadTools();
     }
 
-    /**
-     * @throws Exception
-     * When namespace isn't found
-     */
     public function loadTools()
     {
-        $this->venta = new Venta($this->namespace);
-        $this->CSSBuilder = new CSSBuilderFacade(
-            $this->namespace,
-            $this->venta
-        );
-        $this->HTMLBuilder = new HTMLBuilderFacade(
-            $this->namespace,
-            $this->venta
-        );
-        $this->Compiler = new Compiler(
-            $this->namespace,
-            $this->venta
-        );
+        $this->startVenta()
+             ->loadBuilder(CSSBuilderFacade::class)
+             ->loadBuilder(HTMLBuilderFacade::class);
     }
 
+    private function startVenta()
+    {
+        $this->venta = new Venta();
+        return $this;
+    }
+
+    private function loadBuilder(
+        string $Builder
+        )
+    {
+        $builder = new $Builder($this->venta);
+        $name    = (new \ReflectionClass($builder))->getShortName();
+        $this->$name = $builder;
+        return $this;
+    }
 
     public function build()
     {
-        $timeStart = microtime(true);
 
-        $this->CSSBuilder->build();
+        $this->CSSBuilderFacade->build();
+        exit();
+
         $this->HTMLBuilder->build();
         $this->Compiler->compile();
 

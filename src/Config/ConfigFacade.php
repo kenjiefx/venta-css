@@ -15,7 +15,6 @@ class ConfigFacade {
         $this->argv = $argv;
     }
 
-
     public function create()
     {
         try {

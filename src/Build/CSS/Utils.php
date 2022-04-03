@@ -6,13 +6,13 @@ use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 
 class Utils {
 
-    public static function parseRawCss(
+    public static function segregateTokens(
         CSSModel $css
         )
     {
         preg_match_all(
             '/(?ims)([a-z0-9*\s\,\.\:#_\-@]+)\{([^\}]*)\}/',
-            $css->getRaw(),
+            $css->getNativeChunk(),
             $arr
         );
         foreach ($arr[0] as $i => $x) {
@@ -49,7 +49,7 @@ class Utils {
                 exit();
             }
 
-            $css->createSelector($selector);
+            $css->createToken($selector);
             $rules = explode(';', trim($arr[2][$i]));
 
             foreach ($rules as $strRule) {

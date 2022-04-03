@@ -7,7 +7,7 @@ use \Kenjiefx\VentaCss\Build\CSSBuilder;
 use \Kenjiefx\VentaCss\Build\HTML\FileSys;
 use \Kenjiefx\VentaCss\Build\BuildManager;
 
-class BuilderFacade {
+class BuilderFacade implements BuilderFacadeInterface {
 
   private array $argv;
   private string $namespace;

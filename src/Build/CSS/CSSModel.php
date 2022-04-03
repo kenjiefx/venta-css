@@ -6,14 +6,18 @@ use \Kenjiefx\VentaCss\Cli\CoutStreamer;
 class CSSModel {
 
     private array $css;
-    private string $rawCss;
+    private string $source;
+    private string $nativeChunk;
+    private array $mediaQueryChunks;
 
     public function __construct()
     {
         $this->css = [];
+        $nativeChunk = '';
+        $mediaQueryChunks = '';
     }
 
-    public function createSelector (
+    public function createToken (
         string $selectorName
         )
     {
@@ -50,16 +54,28 @@ class CSSModel {
         return $this;
     }
 
-    public function setRaw(
-        string $rawCss
+    public function setSource(
+        string $source
         )
     {
-        $this->rawCss = $rawCss;
+        $this->source = $source;
     }
 
-    public function getRaw()
+    public function setNativeChunk(
+        string $nativeChunk
+        )
     {
-        return $this->rawCss;
+        $this->nativeChunk = $nativeChunk;
+    }
+
+    public function getNativeChunk()
+    {
+        return $this->nativeChunk;
+    }
+
+    public function getSource()
+    {
+        return $this->source;
     }
 
     public function sort()
@@ -67,7 +83,7 @@ class CSSModel {
         asort($this->css);
     }
 
-    public function export()
+    public function exportTokens()
     {
         return $this->css;
     }
