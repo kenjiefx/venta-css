@@ -50,8 +50,7 @@ class BuildManager implements BuilderFacadeInterface {
 
     public function build()
     {
-        $timeStart        = microtime(true);
-        $originalFileSize = FileSys::getSize($this->venta->getFrontend().'/venta/app.css');
+        $timeStart = microtime(true);
 
         $this->CSSBuilder->build();
         $this->HTMLBuilder->build();
@@ -61,7 +60,6 @@ class BuildManager implements BuilderFacadeInterface {
 
         $newFileSize = FileSys::getSize($this->venta->getFrontend().'/venta/app.css');
         CoutStreamer::cout('Total build time: '.(microtime(true)-$timeStart).' seconds');
-        CoutStreamer::cout('CSS reduced size from '.$originalFileSize.' → '.$newFileSize);
 
     }
 

@@ -39,32 +39,52 @@ class CSSChunker {
 
     private function prune()
     {
-
         $raw = $this->raw;
         $starter = strpos($raw,'{');
         if (!$starter)
             return false;
 
-
+        // echo "-----".PHP_EOL;
+        // echo $raw.PHP_EOL;
         $prulen = $this->getPrulen();
-        if (!$prulen)
-            return false;
+        // var_dump($prulen);
 
-        $selector = substr($raw,0,$prulen);
+        if ($prulen) {
+            $selector = substr($raw,0,$prulen);
+        } else {
+            $selector = $raw;
+        }
 
         if (str_contains($selector,'@media')) {
             # Getting extra selector content;
-            $closer = strpos($this->raw,'}');
-            $extra = substr($this->raw,0,$closer+1);
-            $selector = $selector.' '.$extra;
-            $this->getPrulen();
+            $hasExtra = true;
+            while ($hasExtra) {
+                $closer = strpos($this->raw,'}');
+                $extra = substr($this->raw,0,$closer+1);
+                $selector = $selector.' '.$extra;
+                $this->getPrulen();
+                if ($this->raw[0]==='}') {
+                    $hasExtra = false;
+                }
+            }
+
+            if ($this->raw[0]==='}') {
+                $this->raw = ltrim($this->raw, '}');
+            }
+
             array_push($this->mediaBlocks,$selector.'}');
+
         } else {
+            // echo $selector.PHP_EOL;
             $this->nativeBlocks .= $selector.' ';
         }
 
-        return true;
+        // echo "-----".PHP_EOL;
 
+        if (!$prulen)
+            return false;
+
+        return true;
     }
 
     private function getPrulen()
@@ -74,7 +94,7 @@ class CSSChunker {
         if (!$closer)
             return false;
         $prulen = ($closer-strlen($raw)+1);
-        $this->raw = substr($raw,$prulen,strlen($raw));
+        $this->raw = trim(substr($raw,$prulen,strlen($raw)));
         return $prulen;
     }
 

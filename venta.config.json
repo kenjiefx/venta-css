@@ -1,5 +1,5 @@
 {
 	"namespace": "test",
 	"ignore": [],
-	"extensions": ["ext.css"]
+	"extensions": ["extension.css"]
 }
