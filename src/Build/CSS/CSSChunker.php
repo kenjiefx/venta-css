@@ -63,7 +63,7 @@ class CSSChunker {
                 $extra = substr($this->raw,0,$closer+1);
                 $selector = $selector.' '.$extra;
                 $this->getPrulen();
-                if ($this->raw[0]==='}') {
+                if ($this->raw[0]==='}'||$this->raw[0]==='@') {
                     $hasExtra = false;
                 }
             }
