@@ -294,6 +294,10 @@ class CSSBuildManager {
                     $mediaSelector->rules = $rules;
                     array_push($this->theCompiled,$mediaSelector);
                     $this->addReference($selector,$mediaSelector->minifiedName);
+                } else {
+                    $specificationSelector = new SelectorModel($selector);
+                    $specificationSelector->minifyName($this->theTracker);
+                    $this->addReference($selector,$specificationSelector->minifiedName);
                 }
             }
         }
