@@ -100,7 +100,6 @@ class CSSBuildManager {
         return $this;
     }
 
-
     private function segregateNativeTokens()
     {
         Utils::segregateTokens($this->CSS);
@@ -122,26 +121,6 @@ class CSSBuildManager {
         }
     }
 
-
-
-    private function chunk()
-    {
-        $chunker = new CSSChunker($this->ParsedCSS->getRaw());
-        $raw     = $chunker->init()->getNativeBlocks();
-        $this->ParsedCSS->setRaw($raw);
-        return;
-    }
-
-    private function register(
-        string $selectorName,
-        array $rules
-        )
-    {
-        $selectorObj = new SelectorModel(trim($selectorName));
-        $selectorObj->rules = $rules;
-        array_push($this->theRegistrar,$selectorObj);
-    }
-
     /**
      * After the main CSS file was parsed, and individual selectors
      * are given minified name, sorted out, and segragated into separate
@@ -149,7 +128,7 @@ class CSSBuildManager {
      * by eliminating literraly the same selector, but has different rules given
      *
      */
-    public function reduce()
+    public function reduceTokens()
     {
         $TheRegistrar = $this->theRegistrar;
         $reduced = [];

@@ -13,10 +13,10 @@ class BuilderFacade implements BuilderFacadeInterface {
   private string $namespace;
 
   public function __construct(
-    array $argv
-    )
+      array $argv
+      )
   {
-    $this->argv = $argv;
+      $this->argv = $argv;
   }
 
   public function build()

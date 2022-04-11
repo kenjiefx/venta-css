@@ -3,9 +3,8 @@
 namespace Kenjiefx\VentaCss\Exceptions;
 use \Kenjiefx\VentaCss\Cli\Console;
 
-
 class MissingComponentException extends \Exception {
-
+    
     public static function error(
         string $dir
         )
