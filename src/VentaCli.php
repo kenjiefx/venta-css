@@ -5,7 +5,7 @@ use \Kenjiefx\VentaCss\Cli\Registry;
 use \Kenjiefx\VentaCss\Cli\Console;
 use \Kenjiefx\VentaCss\Build\BuilderFacade;
 use \Kenjiefx\VentaCss\Build\ReversionManager;
-use \Kenjiefx\VentaCss\Config\ConfigManager;
+use \Kenjiefx\VentaCss\Config\ConfigFacade;
 
 class VentaCli extends Console {
 
@@ -79,10 +79,11 @@ class VentaCli extends Console {
      */
     private function hook()
     {
-        Console::out('Initializing config');
-        (new ConfigManager($this->argv))->ready();
-        $this->pull();
-        Console::out('Venta App is ready! Run build command using <venta build>');
+        //Console::out('Initializing config');
+        (new ConfigFacade($this->argv))->ready();
+        //(new ConfigManager($this->argv))->ready();
+        //$this->pull();
+        //Console::out('Venta App is ready! Run build command using <venta build>');
     }
 
 
@@ -99,15 +100,23 @@ class VentaCli extends Console {
      */
     private function pull()
     {
-        Console::out('Pulling in build directory...');
+        Console::out(
+          'Pulling in build directory...'
+        );
+
         (new ReversionManager($this->argv))->pull();
-        Console::out('Build directory pulled in successfully!',TOF_SUCCESS);
+
+        Console::out(
+          'Build directory pulled in successfully!'
+          ,TOF_SUCCESS
+        );
+
         return $this;
     }
 
     private function revert()
     {
-        
+
     }
 
     private function build()

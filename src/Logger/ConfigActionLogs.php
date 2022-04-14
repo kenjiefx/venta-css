@@ -10,7 +10,7 @@ class ConfigActionLogs {
         string $message
         )
     {
-
+        echo $message;
     }
 
 

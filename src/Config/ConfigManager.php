@@ -1,12 +1,14 @@
 <?php
 
 namespace Kenjiefx\VentaCss\Config;
+use \Kenjiefx\VentaCss\ManagerRegistry;
 use \Kenjiefx\VentaCss\Config\VentaConfigInitializer;
 use \Kenjiefx\VentaCss\Exceptions\CommandLineException;
 use \Kenjiefx\VentaCss\Exceptions\MissingComponentException;
 use \Kenjiefx\VentaCss\Cli\Console;
 use \Kenjiefx\VentaCss\Logger\ConfigActionLogs;
 
+#[ManagerRegistry('ConfigManager')]
 class ConfigManager {
 
     /**
@@ -40,6 +42,7 @@ class ConfigManager {
      *
      * @throws CommandLineException
      */
+    #[ConfigActionLogs('Initializing Config')]
     public function ready()
     {
         try {
@@ -51,8 +54,6 @@ class ConfigManager {
         } catch (\Exception $e) {
             CommandLineException::incomplete($e->getMessage());
         }
-
-        $this->verify();
     }
 
     /**
@@ -62,6 +63,7 @@ class ConfigManager {
      *
      * @throws MissingComponentException
      */
+    #[ConfigActionLogs('Verifying Config')]
     private function verify()
     {
         try {

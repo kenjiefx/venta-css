@@ -1,31 +1,37 @@
 <?php
 
 namespace Kenjiefx\VentaCss\Config;
-use \Kenjiefx\VentaCss\Cli\CoutStreamer;
-use \Kenjiefx\VentaCss\Config\VentaConfigInitializer;
+use \Kenjiefx\VentaCss\VentaFacadeTraits;
+use \Kenjiefx\VentaCss\Config\ConfigManager;
 
 class ConfigFacade {
 
+    use VentaFacadeTraits;
+
+    /**
+     * @var array
+     * Command line inputs
+     */
     private array $argv;
+
+    /**
+     * @var ReflectionClass
+     */
+    private \ReflectionClass $VentaManager;
 
     public function __construct(
         array $argv
         )
     {
         $this->argv = $argv;
+        $this->VentaManager = new \ReflectionClass(ConfigManager::class);
     }
 
-    public function create()
+    public function __call($fn,$args)
     {
-        try {
-            if (!isset($this->argv[2])) {
-                throw new \Exception('Requires build directory', 1);
-            }
-        } catch (\Exception $e) {
-            CoutStreamer::cout('Error: '.$e->getMessage(),'error');
-        }
-
-        VentaConfigInitializer::hook($this->argv[2]);
+        if (!$this->hasMethod($fn)) return;
+        $this->invokeMethod($fn,$this->argv);
     }
+
 
 }
