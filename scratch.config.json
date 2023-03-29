@@ -1,0 +1,10 @@
+{
+    "theme": "infinity",
+    "exportDir": "\/dist",
+    "build": {
+        "useRandomAssetsFileNames": false
+    },
+    "extensions": {
+        "Kenjiefx\\VentaCSS\\VentaCSS":{}
+    }
+}

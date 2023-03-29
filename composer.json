@@ -1,0 +1,21 @@
+{
+    "name": "kenjiefx/venta-css",
+    "description": "Venta CSS extension for Scratch PHP",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kenjiefx\\VentaCSS\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "kenjiefx",
+            "email": "terradoflex@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "kenjiefx/scratch-php": "dev-main"
+    }
+}
