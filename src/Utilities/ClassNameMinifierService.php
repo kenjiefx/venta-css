@@ -1,19 +1,19 @@
 <?php
 
 declare(strict_types=1);
-namespace Kenjiefx\VentaCSS\Services;
+namespace Kenjiefx\VentaCSS\Utilities;
 
-class ClassNameMinifier {
+class ClassNameMinifierService {
 
     private const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     private array $usedNames = [];
     private const NAME_LENGTH = 3;
+    private int $name_ext = 1;
 
-    public function create()
+    public function create_minified_name_token()
     {
-        $this->nameExt = 1;
         return $this->generate(
-            str_split(ClassNameMinifier::CHARS)
+            str_split(ClassNameMinifierService::CHARS)
         );
     }
 
@@ -24,7 +24,7 @@ class ClassNameMinifier {
         $name = $chars[rand(1,51)].
                 $chars[rand(1,51)].
                 $chars[rand(1,51)].
-                $this->nameExt++;
+                $this->name_ext++;
         if (!in_array($name,$this->usedNames)) {
             array_push($this->usedNames,$name);
             return $name;

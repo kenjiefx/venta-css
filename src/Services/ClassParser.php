@@ -38,7 +38,7 @@ class ClassParser {
                 continue;
             }
             if ($isRecording && $HTMLChar==='"') {
-                //array_push($classes,'class="'.$classList.'"');
+                
                 $classes['class="'.$classList.'"'] = [
                     'classList' => explode(' ',$classList),
                     'minifiedClassNames' => explode(' ',$classList)
