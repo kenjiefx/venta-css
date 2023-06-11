@@ -1,5 +1,5 @@
 {
-    "theme": "infinity",
+    "theme": "slate",
     "exportDir": "\/dist",
     "build": {
         "useRandomAssetsFileNames": false

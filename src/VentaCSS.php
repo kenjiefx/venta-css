@@ -4,286 +4,124 @@ declare(strict_types=1);
 namespace Kenjiefx\VentaCSS;
 use Kenjiefx\ScratchPHP\App\Components\ComponentModel;
 use Kenjiefx\ScratchPHP\App\Interfaces\ExtensionsInterface;
+use Kenjiefx\VentaCSS\Groupings\GroupedUtilityClassCompiler;
+use Kenjiefx\VentaCSS\MediaQueries\MediaQueryCompiler;
+use Kenjiefx\VentaCSS\PageHtml\PageHtmlMutator;
+use Kenjiefx\VentaCSS\Registries\ClassRegistry;
+use Kenjiefx\VentaCSS\Utilities\ClassNameMinifierService;
+use Kenjiefx\VentaCSS\Utilities\UtilityClassCompiler;
 use Kenjiefx\VentaCSS\VentaConfig;
-use Kenjiefx\VentaCSS\Services\ClassParser;
-use Kenjiefx\VentaCSS\Services\AssetsManager;
-use Kenjiefx\VentaCSS\Services\ClassNameMinifier;
-use Kenjiefx\VentaCSS\Services\MediaQueryManager;
 use Kenjiefx\VentaCSS\Factories\VentaConfigFactory;
-use Kenjiefx\VentaCSS\Services\GroupedAssetsManager;
-use Kenjiefx\VentaCSS\Services\ThemeCustomAssetsManager;
 
 
 class VentaCSS implements ExtensionsInterface {
 
-    /**
-     * @var string $PreProcessedHTML - The HTML document
-     *             before CSS file has been processed
-     */
-    private string $PreProcessedHTML = '';
 
     /**
-     * @var string $PostProcessedHTML - The HTML document
-     *             after CSS file has been processed
+     * The HTML document or page before Venta CSS processes were completed
      */
-    private string $PostProcessedHTML = '';
+    private string $preprocess_html;
 
     /**
-     * @var array $ClassRegistry - Contains all the class attributes
-     *            that can be found in the source the HTML document
+     * The CSS codes of the page Html after Venta CSS processes were completed
      */
-    private array $ClassRegistry = [];
-
-    /**
-     * @var array $ListOfUtilityClasses - All Utility classes generated
-     *            by the AssetsManager object
-     */
-    private array $ListOfUtilityClasses = [];
-
-    /**
-     * All Utility classes that were being used, already minified
-     */
-    private array $UsedUtilityClasses = [];
-
-    /**
-     * All media breakpoints and their Utility classes generated 
-     * and listed by the MediaQueryManager object
-     */
-    private array $ListOfMediaQueryBreakPoints = [];
-
-    /**
-     * All media breakpoints and their Utility Classes being used
-     */
-    private array $UsedMediaQueryBreakpoints = [];
-
-    private static bool $hasLoaded;
-
+    private string $postprocess_css;
 
     private VentaConfig $VentaConfig;
 
 
     public function __construct(
         private VentaConfigFactory $VentaConfigFactory,
-        private ClassParser $ClassParser,
-        private AssetsManager $AssetsManager,
-        private ThemeCustomAssetsManager $ThemeCustomAssetsManager,
-        private GroupedAssetsManager $GroupedAssetsManager,
-        private ClassNameMinifier $ClassNameMinifier,
-        private MediaQueryManager $MediaQueryManager
+        private ClassRegistry $ClassRegistry,
+        private GroupedUtilityClassCompiler $GroupedUtilityClassCompiler,
+        private UtilityClassCompiler $UtilityClassCompiler,
+        private PageHtmlMutator $PageHtmlMutator,
+        private MediaQueryCompiler $MediaQueryCompiler,
+        private ClassNameMinifierService $ClassNameMinifierService
         )
     {
         $this->VentaConfig = VentaConfigFactory::create();
     }
 
-    public function mutatePageHTML(
-        string $pageHTML
-        ): string
+    /**
+     * This method is part of the Scratch ExtensionsInterface
+     * @see ExtensionsInterface::mutatePageHTML for definition
+     */
+    public function mutatePageHTML(string $page_html): string
     {
-        $this->PreProcessedHTML = $pageHTML;
-        $this->ClassParser->setHTMLSource($pageHTML);
-        $this->runExtension();
-        return $this->getProcessedPageHTML();
+        $this->preprocess_html = $page_html;
+        $this->run_extension();
+        $this->generate_postprocess_css();
+        $postprocessed_html = $this->PageHtmlMutator->mutate(($page_html));
+        $this->clear_all_registry();
+        return $postprocessed_html;
     }
 
-    public function mutatePageCSS(
-        string $pageCSS
-        ): string
+    /**
+     * This method is part of the Scratch ExtensionsInterface
+     * @see ExtensionsInterface::mutatePageCSS for definition
+     */
+    public function mutatePageCSS(string $page_css): string
     {
-        $mutatedCSS = $pageCSS.$this->getProcessedPageCSS();
-        return str_replace(["\r","\n","    ","\t"],"", $mutatedCSS);
+        $postprocess_css = $page_css.$this->postprocess_css;
+        # Clearing $this->postprocess_css for the next page render
+        $this->postprocess_css = '';
+        return $postprocess_css;
     }
 
-    public function mutatePageJS(
-        string $pageJS
-    ):string {
-        return $pageJS;
+    /**
+     * This method is part of the Scratch ExtensionsInterface
+     * @see ExtensionsInterface::mutatePageJS for definition
+     */
+    public function mutatePageJS(string $page_js):string {
+        return $page_js;
     }
 
+    /**
+     * This method is part of the Scratch ExtensionsInterface
+     * @see ExtensionsInterface::onCreateComponentContent for definition
+     */
     public function onCreateComponentContent(ComponentModel $componentModel, string $content):string {
         return $content;
     }
-
+    
+    /**
+     * This method is part of the Scratch ExtensionsInterface
+     * @see ExtensionsInterface::onCreateComponentCSS for definition
+     */
     public function onCreateComponentCSS(ComponentModel $componentModel, string $css): string {
         return $css;
     }
 
+    /**
+     * This method is part of the Scratch ExtensionsInterface
+     * @see ExtensionsInterface::onCreateComponentJS for definition
+     */
     public function onCreateComponentJS(ComponentModel $componentModel, string $js): string {
         return $js;
     }
 
-    public function runExtension()
+    public function run_extension()
     {
-        $this->registerClasses();
-        $this->compileGroupedUtilityClasses();
-        $this->compileUtilityClasses();
-        $this->compileCustomUtilityClasses();
-        $this->compileMediaQueryBreakpoints();
-        $this->generatePostProcessHTML();
+        $this->VentaConfig->unpack_config_values();
+        $this->ClassRegistry->register($this->preprocess_html);
+        $this->GroupedUtilityClassCompiler->compile();
+        $this->MediaQueryCompiler->compile();
+        $this->UtilityClassCompiler->compile();
     }
 
-    private function registerClasses()
-    {
-        foreach ($this->ClassParser->parse() as $classStatememt => $classParsingData) {
-            $this->ClassRegistry[$classStatememt] = $classParsingData;
-        }
-        return $this;
+    private function clear_all_registry(){
+        $this->ClassRegistry->clear_registry();
+        $this->GroupedUtilityClassCompiler->clear_grouped_utility_class_registry();
+        $this->UtilityClassCompiler->clear_utility_class_registry();
+        $this->MediaQueryCompiler->clear_utilized_breakpoints_list();
+        $this->ClassNameMinifierService->clear_utilized_minified_names();
     }
 
-    private function compileGroupedUtilityClasses()
-    {
-        foreach ($this->GroupedAssetsManager->compileAssets() as $groupName => $members) {
-
-            foreach ($this->ClassRegistry as $classStatement => $classDetails) {
-                if  (in_array($groupName,$classDetails['classList'])) {
-                    $updatedClassList = [];
-                    foreach ($classDetails['minifiedClassNames'] as $unExtractedClassName) {
-                        if ($unExtractedClassName===$groupName) {
-                            foreach ($members as $member) {
-                                array_push($updatedClassList,$member);
-                            }
-                        } else {
-                            array_push($updatedClassList,$unExtractedClassName);
-                        }
-                    }
-                    $this->ClassRegistry[$classStatement]['minifiedClassNames'] = $updatedClassList;
-                    $this->ClassRegistry[$classStatement]['classList'] = $updatedClassList;
-                }
-
-            }
-        }
-    }
-
-    private function compileUtilityClasses()
-    {
-        foreach ($this->AssetsManager->compileAssets() as $selector => $rules) {
-
-            $this->ListOfUtilityClasses[$selector] = $rules;
-
-            $minifiedClassName = $this->ClassNameMinifier->create();
-
-            foreach ($this->ClassRegistry as $classStatement => $classDetails) {
-                
-                if (in_array($selector,$classDetails['classList'])) {
-                    
-                    $newArr = [];
-                    foreach ($classDetails['minifiedClassNames'] as $unMinifiedClassName) {
-                        if ($unMinifiedClassName===$selector) {
-                            array_push($newArr,$minifiedClassName);
-                        } else {
-                            array_push($newArr,$unMinifiedClassName);
-                        }
-                    }
-                    $this->ClassRegistry[$classStatement]['minifiedClassNames'] = $newArr;
-                    $this->UsedUtilityClasses[$minifiedClassName] = $rules;
-                }
-            }
-        }
- 
-    }
-
-    private function compileCustomUtilityClasses() 
-    {
-        foreach ($this->ThemeCustomAssetsManager->loadCustomAssets() as $selector => $options) {
-            $rules = $options['rules'];
-            $this->ListOfUtilityClasses[$selector] = $rules;
-            $minifiedClassName = $this->ClassNameMinifier->create();
-            foreach ($this->ClassRegistry as $classStatement => $classDetails) {
-                if (in_array($selector,$classDetails['classList'])) {
-                    $newArr = [];
-                    foreach ($classDetails['minifiedClassNames'] as $unMinifiedClassName) {
-                        if ($unMinifiedClassName===$selector) {
-                            array_push($newArr,$minifiedClassName);
-                        } else {
-                            array_push($newArr,$unMinifiedClassName);
-                        }
-                    }
-                    $this->ClassRegistry[$classStatement]['minifiedClassNames'] = $newArr;
-                    $this->UsedUtilityClasses[$minifiedClassName] = $rules;
-                }
-            }
-        }
-    }
-
-    private function compileMediaQueryBreakpoints()
-    {
-        foreach ($this->MediaQueryManager->compileAssets() as $widthQueryClause => $mediaQueryAsset) {
-            foreach ($mediaQueryAsset['selector_list'] as $selectorName => $selectorValue) {
-                $minifiedClassName = $this->ClassNameMinifier->create();
-                foreach ($this->ClassRegistry as $classStatement => $classDetails) {
-                    if (in_array($selectorName,$classDetails['classList'])) {
-                        $newArr = [];
-                        foreach ($classDetails['minifiedClassNames'] as $unMinifiedClassName) {
-                            if ($unMinifiedClassName===$selectorName) {
-                                array_push($newArr,$minifiedClassName);
-                            } else {
-                                array_push($newArr,$unMinifiedClassName);
-                            }
-                        }
-                        $this->ClassRegistry[$classStatement]['minifiedClassNames'] = $newArr;
-                        if (!isset($this->UsedMediaQueryBreakpoints[$widthQueryClause])) {
-                            $this->UsedMediaQueryBreakpoints[$widthQueryClause] = [];
-                        }
-                        $this->UsedMediaQueryBreakpoints[$widthQueryClause][$minifiedClassName] = $selectorValue;
-                    }
-                }
-            }
-        }
-    }
-
-    public function getProcessedPageCSS(): string
-    {
-        return $this->stringifyAllUsedCSS();
-    }
-
-    private function stringifyAllUsedCSS()
-    {
-        $css = '';
-        foreach ($this->UsedUtilityClasses as $selector => $rules) {
-            $css .= '.'.$selector.'{'.$rules.'}';
-        }
-        foreach ($this->UsedMediaQueryBreakpoints as $breakpoint => $listOfRules) {
-            $css .= '@media screen and ('.$breakpoint.'px){';
-                foreach ($listOfRules as $selector => $rules) {
-                    $css .= '.'.$selector.'{'.$rules.'}';
-                }
-            $css .= '}';
-        }
-        $this->UsedUtilityClasses = [];
-        $this->UsedMediaQueryBreakpoints = [];
-        $this->ClassRegistry = [];
-        return $css;
-    }
-
-    private function generatePostProcessHTML()
-    {
-
-        $this->PostProcessedHTML = $this->PreProcessedHTML;
-
-        foreach ($this->ClassRegistry as $classStatement => $classDetails) {
-
-            $classAttributeMinified = 'class="'.implode(' ',$classDetails['minifiedClassNames']).'"';
-
-            $this->PostProcessedHTML = str_replace($classStatement,$classAttributeMinified,$this->PostProcessedHTML);
-
-        }
-    }
-
-    public function getProcessedPageHTML(): string
-    {
-        return $this->PostProcessedHTML;
-    }
-
-    public function getDashboard()
-    {
-        ob_start();
-        include __dir__.'/Dashboard/dashboard.php';
-        $dashboard = ob_get_contents();
-        ob_end_clean();
-        return $dashboard;
-    }
-
-    public function setRawPageCSS(string $rawPageCSS) {
-        return '';
+    public function generate_postprocess_css() {
+        $postprocess_css = $this->UtilityClassCompiler->to_exportable_css();
+        $postprocess_css .= $this->MediaQueryCompiler->to_exportable_css();
+        $this->postprocess_css = str_replace(["\r","\n","    ","\t"],"",$postprocess_css);
     }
 
 }
