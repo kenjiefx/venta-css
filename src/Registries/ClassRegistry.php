@@ -68,43 +68,45 @@ class ClassRegistry
      * Validates whether a space-separated class names exists or has been 
      * registered in the Class Registry
      */
-    private function validate_registry_index($space_separated_class_names){
-        $registry_index_name = $this->to_registry_index_name($space_separated_class_names);
-        if (empty(static::$classes)||!isset(static::$classes[$registry_index_name])) {
+    private function validate_registry_index($class_registry_index){
+        if (empty(static::$classes)||!isset(static::$classes[$class_registry_index])) {
             throw new \InvalidArgumentException('Missing class index');
         }
-        return $registry_index_name;
     }
 
     /** 
-     * Returns all the registered classes names separated by spaces
+     * Returns class registry index, that is, an array of class declarations 
+     * class="names" 
      */
-    public function get_registered_space_separated_class_names(){
-        $array_of_space_separated_class_names = [];
+    public function get_class_registry_index():array{
+        $class_registry_index = [];
         foreach (static::$classes as $registry_index_name => $data) {
-            $space_separated_class_names = $data['class_names'];
-            array_push($array_of_space_separated_class_names, $space_separated_class_names);
+            array_push($class_registry_index, $registry_index_name);
         }
-        return $array_of_space_separated_class_names;
+        return $class_registry_index;
     }
 
-    public function get_array_of_class_names(string $space_separated_class_names):array{
-        $reg_i_name = $this->validate_registry_index($space_separated_class_names);
-        return static::$classes[$reg_i_name]['class_names'];
+    public function get_array_of_class_names(string $class_registry_index):array{
+        $this->validate_registry_index($class_registry_index);
+        return static::$classes[$class_registry_index]['class_names'];
     }
 
-    public function get_minified_class_names(string $space_separated_class_names):array{
-        $reg_i_name = $this->validate_registry_index($space_separated_class_names);
-        return static::$classes[$reg_i_name]['minified_class_names'];
+    public function get_minified_class_names(string $class_registry_index):array{
+        $this->validate_registry_index($class_registry_index);
+        return static::$classes[$class_registry_index]['minified_class_names'];
     }
 
-    public function set_array_of_class_names(string $space_separated_class_names,array $array_of_class_names){
-        $reg_i_name = $this->validate_registry_index($space_separated_class_names);
-        static::$classes[$reg_i_name]['class_names'] = $array_of_class_names;
+    public function set_array_of_class_names(string $class_registry_index,array $array_of_class_names){
+        $this->validate_registry_index($class_registry_index);
+        static::$classes[$class_registry_index]['class_names'] = $array_of_class_names;
     }
 
-    public function set_minified_class_names(string $space_separated_class_names,array $array_of_class_names){
-        $reg_i_name = $this->validate_registry_index($space_separated_class_names);
-        static::$classes[$reg_i_name]['minified_class_names'] = $array_of_class_names;
+    public function set_minified_class_names(string $class_registry_index,array $array_of_class_names){
+        $this->validate_registry_index($class_registry_index);
+        static::$classes[$class_registry_index]['minified_class_names'] = $array_of_class_names;
+    }
+
+    public function clear_registry(){
+        static::$classes = [];
     }
 }

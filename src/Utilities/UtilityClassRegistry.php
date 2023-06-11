@@ -43,7 +43,10 @@ class UtilityClassRegistry
                             # Generating the actual selector name
                             $actual_utility_selector = $attribute_name.$separator.($i+1);
                             $value = strval(round($min+$increment,3));
-                            static::$array_of_utility_classes[$actual_utility_selector] = $this->fill_placeholder($rule,$value);
+                            static::$array_of_utility_classes[$actual_utility_selector] = [
+                                'value' => $this->fill_placeholder($rule,$value),
+                                'minified_name' => null
+                            ];
                             $min = $min+$increment;
                             $i++;
                         }
@@ -56,9 +59,29 @@ class UtilityClassRegistry
                         foreach ($values as $value) {
                             # Generating the actual selector name
                             $actual_utility_selector = $attribute_name.$separator.$value;
-                            static::$array_of_utility_classes[$actual_utility_selector] = $this->fill_placeholder($rule,$value);
+                            static::$array_of_utility_classes[$actual_utility_selector] = [
+                                'value' => $this->fill_placeholder($rule,$value),
+                                'minified_name' => null
+                            ];
                         }
                         break;
+
+
+                    case 'dictionary': 
+                        $values = $configuration['values'];
+                        $rule = $configuration['rule'];
+                        foreach ($values as $key => $value) {
+                            # Generating the actual selector name
+                            $actual_utility_selector = $attribute_name.$separator.$key;
+                            static::$array_of_utility_classes[$actual_utility_selector] = [
+                                'value' => $this->fill_placeholder($rule,$value),
+                                'minified_name' => null
+                            ];
+                        }
+                        break;   
+                        
+
+
                     default: 
                         $error = 'Invalid configuration.';
                         throw new \InvalidArgumentException($error);
@@ -71,5 +94,26 @@ class UtilityClassRegistry
 
     private function fill_placeholder(string $text, string $value){
         return str_replace(self::PLACEHOLDER,$value,$text);
+    }
+
+
+    public function set_minified_name(string $utility_class_name, string $minified_class_name){
+        static::$array_of_utility_classes[$utility_class_name]['minified_name'] = $minified_class_name;
+    }
+
+    public function get_registry(){
+        return static::$array_of_utility_classes;
+    }
+
+    public function get_minified_name(string $utility_class_name){
+        return static::$array_of_utility_classes[$utility_class_name]['minified_name'];
+    }
+
+    public function get_utility_value(string $utility_class_name){
+        return static::$array_of_utility_classes[$utility_class_name]['value'];
+    }
+
+    public function clear_registry(){
+        static::$array_of_utility_classes = [];
     }
 }

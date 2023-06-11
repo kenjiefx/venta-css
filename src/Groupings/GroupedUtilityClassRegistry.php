@@ -62,4 +62,8 @@ class GroupedUtilityClassRegistry
             }
         }
     }
+
+    public function clear_registry(){
+        static::$groups = [];
+    }
 }
