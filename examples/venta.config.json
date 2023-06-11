@@ -1,0 +1,36 @@
+{
+    "media-breakpoints":{
+		"mobile": {
+			"min-width":"1px",
+			"max-width":"768px"
+		},
+		"desktop": {
+			"min-width":"769px",
+			"max-width": null
+		}
+	},
+    "color": {
+        "rule": "color:{value}",
+		"type": "dictionary",
+		"values": {
+            "black":"#282828",
+            "gray":"#c2c2c2"
+        },
+		"variants": "auto",
+		"separator": "-"
+    },
+    "width": {
+		"rule": "width:{value}%",
+		"type": "minmax",
+		"values": ["0","100"],
+		"variants": "24",
+		"separator": "-"
+	},
+    "justify-content": {
+        "rule": "display:{value}",
+        "type": "list",
+        "values": ["flex-start","flex-end","center","space-between","space-around","space-evenly","initial","inherit"],
+        "variants":"auto",
+        "separator":"-"
+    }
+}
