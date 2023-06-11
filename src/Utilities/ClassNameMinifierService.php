@@ -6,9 +6,7 @@ namespace Kenjiefx\VentaCSS\Utilities;
 class ClassNameMinifierService {
 
     private const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    private array $usedNames = [];
-    private const NAME_LENGTH = 3;
-    private int $name_ext = 1;
+    private static array $used_names = [];
 
     public function create_minified_name_token()
     {
@@ -18,18 +16,26 @@ class ClassNameMinifierService {
     }
 
     private function generate(
-        array $chars
+        array $chars,
+        int $name_ext = 0,
+        $name = null
         )
     {
-        $name = $chars[rand(1,51)].
-                $chars[rand(1,51)].
-                $chars[rand(1,51)].
-                $this->name_ext++;
-        if (!in_array($name,$this->usedNames)) {
-            array_push($this->usedNames,$name);
+        if ($name===null) {
+            $name = $chars[rand(1,51)].
+                    $chars[rand(1,51)].
+                    $chars[rand(1,51)];
+        }
+        $name .= $name_ext++;
+        if (!in_array($name,static::$used_names)) {
+            array_push(static::$used_names,$name);
             return $name;
         }
-        return $this->generate($chars);
+        return $this->generate($chars,$name_ext,$name);
+    }
+
+    public function clear_utilized_minified_names(){
+        static::$used_names = [];
     }
 
 

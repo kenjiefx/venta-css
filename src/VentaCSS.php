@@ -5,8 +5,10 @@ namespace Kenjiefx\VentaCSS;
 use Kenjiefx\ScratchPHP\App\Components\ComponentModel;
 use Kenjiefx\ScratchPHP\App\Interfaces\ExtensionsInterface;
 use Kenjiefx\VentaCSS\Groupings\GroupedUtilityClassCompiler;
+use Kenjiefx\VentaCSS\MediaQueries\MediaQueryCompiler;
 use Kenjiefx\VentaCSS\PageHtml\PageHtmlMutator;
 use Kenjiefx\VentaCSS\Registries\ClassRegistry;
+use Kenjiefx\VentaCSS\Utilities\ClassNameMinifierService;
 use Kenjiefx\VentaCSS\Utilities\UtilityClassCompiler;
 use Kenjiefx\VentaCSS\VentaConfig;
 use Kenjiefx\VentaCSS\Factories\VentaConfigFactory;
@@ -33,7 +35,9 @@ class VentaCSS implements ExtensionsInterface {
         private ClassRegistry $ClassRegistry,
         private GroupedUtilityClassCompiler $GroupedUtilityClassCompiler,
         private UtilityClassCompiler $UtilityClassCompiler,
-        private PageHtmlMutator $PageHtmlMutator
+        private PageHtmlMutator $PageHtmlMutator,
+        private MediaQueryCompiler $MediaQueryCompiler,
+        private ClassNameMinifierService $ClassNameMinifierService
         )
     {
         $this->VentaConfig = VentaConfigFactory::create();
@@ -102,6 +106,7 @@ class VentaCSS implements ExtensionsInterface {
         $this->VentaConfig->unpack_config_values();
         $this->ClassRegistry->register($this->preprocess_html);
         $this->GroupedUtilityClassCompiler->compile();
+        $this->MediaQueryCompiler->compile();
         $this->UtilityClassCompiler->compile();
     }
 
@@ -109,10 +114,14 @@ class VentaCSS implements ExtensionsInterface {
         $this->ClassRegistry->clear_registry();
         $this->GroupedUtilityClassCompiler->clear_grouped_utility_class_registry();
         $this->UtilityClassCompiler->clear_utility_class_registry();
+        $this->MediaQueryCompiler->clear_utilized_breakpoints_list();
+        $this->ClassNameMinifierService->clear_utilized_minified_names();
     }
 
     public function generate_postprocess_css() {
-        $this->postprocess_css = str_replace(["\r","\n","    ","\t"],"", $this->UtilityClassCompiler->to_exportable_css());
+        $postprocess_css = $this->UtilityClassCompiler->to_exportable_css();
+        $postprocess_css .= $this->MediaQueryCompiler->to_exportable_css();
+        $this->postprocess_css = str_replace(["\r","\n","    ","\t"],"",$postprocess_css);
     }
 
 }

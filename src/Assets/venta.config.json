@@ -1,4 +1,14 @@
 {
+	"media-breakpoints":{
+		"mobile": {
+			"min-width":"1px",
+			"max-width":"768px"
+		},
+		"desktop": {
+			"min-width":"769px",
+			"max-width": null
+		}
+	},
     "width": {
 		"rule": "width:{value}%",
 		"type": "minmax",
