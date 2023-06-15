@@ -3,6 +3,9 @@
 declare(strict_types=1);
 namespace Kenjiefx\VentaCSS;
 use Kenjiefx\ScratchPHP\App\Components\ComponentModel;
+use Kenjiefx\ScratchPHP\App\Events\ListensTo;
+use Kenjiefx\ScratchPHP\App\Events\OnBuildCssEvent;
+use Kenjiefx\ScratchPHP\App\Events\OnBuildHtmlEvent;
 use Kenjiefx\ScratchPHP\App\Interfaces\ExtensionsInterface;
 use Kenjiefx\VentaCSS\Groupings\GroupedUtilityClassCompiler;
 use Kenjiefx\VentaCSS\MediaQueries\MediaQueryCompiler;
@@ -43,10 +46,8 @@ class VentaCSS implements ExtensionsInterface {
         $this->VentaConfig = VentaConfigFactory::create();
     }
 
-    /**
-     * This method is part of the Scratch ExtensionsInterface
-     * @see ExtensionsInterface::mutatePageHTML for definition
-     */
+
+    #[ListensTo(OnBuildHtmlEvent::class)]
     public function mutatePageHTML(string $page_html): string
     {
         $this->preprocess_html = $page_html;
@@ -57,48 +58,14 @@ class VentaCSS implements ExtensionsInterface {
         return $postprocessed_html;
     }
 
-    /**
-     * This method is part of the Scratch ExtensionsInterface
-     * @see ExtensionsInterface::mutatePageCSS for definition
-     */
+
+    #[ListensTo(OnBuildCssEvent::class)]
     public function mutatePageCSS(string $page_css): string
     {
         $postprocess_css = $page_css.$this->postprocess_css;
         # Clearing $this->postprocess_css for the next page render
         $this->postprocess_css = '';
         return $postprocess_css;
-    }
-
-    /**
-     * This method is part of the Scratch ExtensionsInterface
-     * @see ExtensionsInterface::mutatePageJS for definition
-     */
-    public function mutatePageJS(string $page_js):string {
-        return $page_js;
-    }
-
-    /**
-     * This method is part of the Scratch ExtensionsInterface
-     * @see ExtensionsInterface::onCreateComponentContent for definition
-     */
-    public function onCreateComponentContent(ComponentModel $componentModel, string $content):string {
-        return $content;
-    }
-    
-    /**
-     * This method is part of the Scratch ExtensionsInterface
-     * @see ExtensionsInterface::onCreateComponentCSS for definition
-     */
-    public function onCreateComponentCSS(ComponentModel $componentModel, string $css): string {
-        return $css;
-    }
-
-    /**
-     * This method is part of the Scratch ExtensionsInterface
-     * @see ExtensionsInterface::onCreateComponentJS for definition
-     */
-    public function onCreateComponentJS(ComponentModel $componentModel, string $js): string {
-        return $js;
     }
 
     public function run_extension()
