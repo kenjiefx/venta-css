@@ -28,7 +28,7 @@ class GroupedUtilityClassRegistry
     {
         if (empty(static::$groups)) {
 
-            $grouped_class_storage_path = $this->ThemeController->getThemePath().Self::GROUPED_CSS_JSON_DIR;
+            $grouped_class_storage_path = $this->ThemeController->getThemeDirPath().Self::GROUPED_CSS_JSON_DIR;
             if (is_dir($grouped_class_storage_path)) {
 
                 # Looping through all the files

@@ -2,7 +2,7 @@
     "theme": "slate",
     "exportDir": "\/dist",
     "build": {
-        "useRandomAssetsFileNames": false
+        "useRandomAssetsFileNames": true
     },
     "extensions": {
         "Kenjiefx\\VentaCSS\\VentaCSS":{}

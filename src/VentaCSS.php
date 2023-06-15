@@ -3,6 +3,9 @@
 declare(strict_types=1);
 namespace Kenjiefx\VentaCSS;
 use Kenjiefx\ScratchPHP\App\Components\ComponentModel;
+use Kenjiefx\ScratchPHP\App\Events\ListensTo;
+use Kenjiefx\ScratchPHP\App\Events\OnBuildCssEvent;
+use Kenjiefx\ScratchPHP\App\Events\OnBuildHtmlEvent;
 use Kenjiefx\ScratchPHP\App\Interfaces\ExtensionsInterface;
 use Kenjiefx\VentaCSS\Groupings\GroupedUtilityClassCompiler;
 use Kenjiefx\VentaCSS\MediaQueries\MediaQueryCompiler;
@@ -47,6 +50,7 @@ class VentaCSS implements ExtensionsInterface {
      * This method is part of the Scratch ExtensionsInterface
      * @see ExtensionsInterface::mutatePageHTML for definition
      */
+    #[ListensTo(OnBuildHtmlEvent::class)]
     public function mutatePageHTML(string $page_html): string
     {
         $this->preprocess_html = $page_html;
@@ -61,6 +65,7 @@ class VentaCSS implements ExtensionsInterface {
      * This method is part of the Scratch ExtensionsInterface
      * @see ExtensionsInterface::mutatePageCSS for definition
      */
+    #[ListensTo(OnBuildCssEvent::class)]
     public function mutatePageCSS(string $page_css): string
     {
         $postprocess_css = $page_css.$this->postprocess_css;
