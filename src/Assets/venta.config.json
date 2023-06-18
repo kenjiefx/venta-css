@@ -319,16 +319,16 @@
     },
     "z-index": {
 		"rule": "z-index:{value}",
-		"type": "minmax",
+		"type": "count",
 		"values": ["1","24"],
-		"variants": "24",
+		"variants": "auto",
 		"separator": "-"
 	},
     "z-index-": {
 		"rule": "z-index:-{value}",
-		"type": "minmax",
+		"type": "count",
 		"values": ["1","24"],
-		"variants": "24",
+		"variants": "auto",
 		"separator": "-"
 	},
     "display": {

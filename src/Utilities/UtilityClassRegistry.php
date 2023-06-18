@@ -79,7 +79,23 @@ class UtilityClassRegistry
                             ];
                         }
                         break;   
-                        
+
+
+                    case 'count';
+                        # The difference of the values between the variants
+                        [$min,$max] = $configuration['values'];
+                        $rule       = $configuration['rule'];
+                        $iterator   = 1;
+                        while ($iterator<intval($max)+1) {
+                            # Generating the actual selector name
+                            $actual_utility_selector = $attribute_name.$separator.$iterator;
+                            static::$array_of_utility_classes[$actual_utility_selector] = [
+                                'value' => $this->fill_placeholder($rule,strval($iterator)),
+                                'minified_name' => null
+                            ];
+                            $iterator++;
+                        }
+                        break;
 
 
                     default: 
