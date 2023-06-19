@@ -18,20 +18,21 @@ class ClassNameMinifierService {
     private function generate(
         array $chars,
         int $name_ext = 0,
-        $name = null
+        string|null $base_name = null
         )
     {
-        if ($name===null) {
-            $name = $chars[rand(1,51)].
-                    $chars[rand(1,51)].
-                    $chars[rand(1,51)];
+        if ($base_name===null) {
+            $base_name = $chars[rand(1,51)].
+                         $chars[rand(1,51)].
+                         $chars[rand(1,51)];
         }
-        $name .= $name_ext++;
-        if (!in_array($name,static::$used_names)) {
-            array_push(static::$used_names,$name);
-            return $name;
+        $minified_name = ($name_ext>0) ? $base_name.$name_ext : $base_name;
+        if (!in_array($minified_name,static::$used_names)) {
+            array_push(static::$used_names,$minified_name);
+            return $minified_name;
         }
-        return $this->generate($chars,$name_ext,$name);
+        $name_ext++;
+        return $this->generate($chars,$name_ext,$base_name);
     }
 
     public function clear_utilized_minified_names(){
