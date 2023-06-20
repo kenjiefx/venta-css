@@ -18,6 +18,11 @@ class MediaQueryCompiler
      */
     private array $utilized_breakpoints_and_classes = [];
 
+    private array $utilized_minfied_utility_class_names = [];
+
+
+    private static array $prepared_breakpoint_addons = [];
+
 
     public function __construct(
         private MediaQueryRegistry $MediaQueryRegistry,
@@ -31,10 +36,10 @@ class MediaQueryCompiler
     public function compile(){
 
         # Retrieving breakpoints declared in the config
-        $media_breakpoints = $this->MediaQueryRegistry->register();
+        $this->MediaQueryRegistry->register();
 
         # Registering available utility classes
-        $utility_classes = $this->UtilityClassRegistry->register();
+        $this->UtilityClassRegistry->register();
 
         # Looping through class declaration from the Class Registry
         foreach ($this->ClassRegistry->get_class_registry_index() as $class_registry_index) {
@@ -57,9 +62,16 @@ class MediaQueryCompiler
                     if ($breakpoint_config===null) {
                         $class_name_from_class_registry = '';
                     } else {
-                        $utility_class_value = $this->UtilityClassRegistry->get_utility_value($utility_class_name);
-                        $class_name_from_class_registry = $this->ClassNameMinifierService->create_minified_name_token();
-                        $this->push_to_utilized_breakpoints($breakpoint_alias,$class_name_from_class_registry,$utility_class_value);
+                        $previously_utilized_minified_name = $this->get_utilized_minified_names($class_name_from_class_registry);
+                        if ($previously_utilized_minified_name===null) {
+                            $utility_class_value = $this->UtilityClassRegistry->get_utility_value($utility_class_name);
+                            $minified_class_name = $this->ClassNameMinifierService->create_minified_name_token();
+                            $this->push_to_utilized_minified_names($class_name_from_class_registry,$minified_class_name);
+                            $class_name_from_class_registry = $minified_class_name;
+                            $this->push_to_utilized_breakpoints($breakpoint_alias,$class_name_from_class_registry,$utility_class_value);
+                        } else {
+                            $class_name_from_class_registry = $previously_utilized_minified_name;
+                        }
                     }
 
                 }
@@ -84,8 +96,18 @@ class MediaQueryCompiler
         }
     }
 
+    private function push_to_utilized_minified_names(string $class_name_from_class_registry, string $minified_class_name_version){
+        $this->utilized_minfied_utility_class_names[$class_name_from_class_registry] = $minified_class_name_version;
+    }
+
+    private function get_utilized_minified_names(string $class_name_from_class_registry){
+        return $this->utilized_minfied_utility_class_names[$class_name_from_class_registry] ?? null;
+    }
+
     public function clear_utilized_breakpoints_list(){
         $this->utilized_breakpoints_and_classes = [];
+        $this->utilized_minfied_utility_class_names = [];
+        static::$prepared_breakpoint_addons = [];
     }
 
     /**
@@ -93,14 +115,44 @@ class MediaQueryCompiler
      */
     public function to_exportable_css(){
         $css = '';
+        $used_breakpoints = [];
         foreach ($this->utilized_breakpoints_and_classes as $breakpoint_alias => $breakpoint_classes) {
             $derived_condition = $this->MediaQueryRegistry->get_breakpoint_config_by_alias($breakpoint_alias)['derived_condition'];
-            $css .= $derived_condition.'{';
-            foreach ($breakpoint_classes as $minified_utility_class_name => $value) {
-                $css .= '.'.$minified_utility_class_name.'{'.$value.'}';
+            if (!isset($used_breakpoints[$derived_condition])) {
+                $used_breakpoints[$derived_condition] = [];
             }
-            $css .= '}';
+            foreach ($breakpoint_classes as $minified_utility_class_name => $value) {
+                array_push(
+                    $used_breakpoints[$derived_condition],
+                    '.'.$minified_utility_class_name.'{'.$value.'}'
+                );
+            }
+        }
+        foreach (static::$prepared_breakpoint_addons as $derived_condition => $css_statements) {
+            if (!isset($used_breakpoints[$derived_condition])) {
+                $used_breakpoints[$derived_condition] = [];
+            }
+            foreach ($css_statements as $css_statement) {
+                array_push(
+                    $used_breakpoints[$derived_condition],
+                    $css_statement
+                );
+            }
+        }
+        foreach ($used_breakpoints as $derived_condition => $css_statements) {
+            $css .= $derived_condition.'{';
+            foreach ($css_statements as $css_statement) {
+                $css .= $css_statement;
+            }
+            $css .= '}';      
         }
         return $css;
+    }
+
+    public static function set_prepared_breakpoint_addon(string $breakpoint_derived_condition, string $css_statement){
+        if (!isset(static::$prepared_breakpoint_addons[$breakpoint_derived_condition])) {
+            static::$prepared_breakpoint_addons[$breakpoint_derived_condition] = [];
+        }
+        array_push(static::$prepared_breakpoint_addons[$breakpoint_derived_condition],$css_statement);
     }
 }
