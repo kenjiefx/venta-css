@@ -10,6 +10,8 @@ use Kenjiefx\ScratchPHP\App\Interfaces\ExtensionsInterface;
 use Kenjiefx\VentaCSS\Groupings\GroupedUtilityClassCompiler;
 use Kenjiefx\VentaCSS\MediaQueries\MediaQueryCompiler;
 use Kenjiefx\VentaCSS\PageHtml\PageHtmlMutator;
+use Kenjiefx\VentaCSS\PseudoClass\PseudoClassCompiler;
+use Kenjiefx\VentaCSS\PseudoElements\PseudoElementsCompiler;
 use Kenjiefx\VentaCSS\Registries\ClassRegistry;
 use Kenjiefx\VentaCSS\Utilities\ClassNameMinifierService;
 use Kenjiefx\VentaCSS\Utilities\UtilityClassCompiler;
@@ -38,6 +40,8 @@ class VentaCSS implements ExtensionsInterface {
         private ClassRegistry $ClassRegistry,
         private GroupedUtilityClassCompiler $GroupedUtilityClassCompiler,
         private UtilityClassCompiler $UtilityClassCompiler,
+        private PseudoClassCompiler $PseudoClassCompiler,
+        private PseudoElementsCompiler $PseudoElementsCompiler,
         private PageHtmlMutator $PageHtmlMutator,
         private MediaQueryCompiler $MediaQueryCompiler,
         private ClassNameMinifierService $ClassNameMinifierService
@@ -65,7 +69,7 @@ class VentaCSS implements ExtensionsInterface {
         $postprocess_css = $page_css.$this->postprocess_css;
         # Clearing $this->postprocess_css for the next page render
         $this->postprocess_css = '';
-        return $postprocess_css;
+        return str_replace(["\r","\n","    ","\t"],"",$postprocess_css);
     }
 
     public function run_extension()
@@ -73,6 +77,8 @@ class VentaCSS implements ExtensionsInterface {
         $this->VentaConfig->unpack_config_values();
         $this->ClassRegistry->register($this->preprocess_html);
         $this->GroupedUtilityClassCompiler->compile();
+        $this->PseudoElementsCompiler->compile();
+        $this->PseudoClassCompiler->compile();
         $this->MediaQueryCompiler->compile();
         $this->UtilityClassCompiler->compile();
     }
@@ -81,14 +87,18 @@ class VentaCSS implements ExtensionsInterface {
         $this->ClassRegistry->clear_registry();
         $this->GroupedUtilityClassCompiler->clear_grouped_utility_class_registry();
         $this->UtilityClassCompiler->clear_utility_class_registry();
+        $this->PseudoElementsCompiler->clear();
+        $this->PseudoClassCompiler->clear();
         $this->MediaQueryCompiler->clear_utilized_breakpoints_list();
         $this->ClassNameMinifierService->clear_utilized_minified_names();
     }
 
     public function generate_postprocess_css() {
         $postprocess_css = $this->UtilityClassCompiler->to_exportable_css();
+        $postprocess_css .= $this->PseudoClassCompiler->export();
+        $postprocess_css .= $this->PseudoElementsCompiler->export();
         $postprocess_css .= $this->MediaQueryCompiler->to_exportable_css();
-        $this->postprocess_css = str_replace(["\r","\n","    ","\t"],"",$postprocess_css);
+        $this->postprocess_css = $postprocess_css;
     }
 
 }
