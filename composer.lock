@@ -128,12 +128,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/kenjiefx/scratch-php.git",
-                "reference": "e11004db1aa0017f2970dc8ba9e0063e1d7235d5"
+                "reference": "f3e29cb76387b08217ba185d536dc8f4c898046b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kenjiefx/scratch-php/zipball/e11004db1aa0017f2970dc8ba9e0063e1d7235d5",
-                "reference": "e11004db1aa0017f2970dc8ba9e0063e1d7235d5",
+                "url": "https://api.github.com/repos/kenjiefx/scratch-php/zipball/f3e29cb76387b08217ba185d536dc8f4c898046b",
+                "reference": "f3e29cb76387b08217ba185d536dc8f4c898046b",
                 "shasum": ""
             },
             "require": {
@@ -166,7 +166,7 @@
                 "issues": "https://github.com/kenjiefx/scratch-php/issues",
                 "source": "https://github.com/kenjiefx/scratch-php/tree/main"
             },
-            "time": "2023-06-18T00:14:17+00:00"
+            "time": "2023-09-25T04:32:23+00:00"
         },
         {
             "name": "league/container",
@@ -1524,5 +1524,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

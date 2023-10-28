@@ -88,6 +88,12 @@ class UtilityClassCompiler
             $minified_name = $this->UtilityClassRegistry->get_minified_name($utilized_utility_class_name);
             $value = $this->UtilityClassRegistry->get_utility_value($utilized_utility_class_name);
             $css .= '.'.$minified_name.'{'.$value.'}';
+            $themed_keyval = $this->UtilityClassRegistry->get_utility_themed_keyval($utilized_utility_class_name);
+            if (!empty($themed_keyval)) {
+                $theme_name = $themed_keyval['theme_name'];
+                $themed_value = $themed_keyval['value'];
+                $css .= '.'.$theme_name.' .'.$minified_name.'{'.$themed_value.'}';
+            }
         }
         return $css;
     }
