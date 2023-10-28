@@ -6,10 +6,10 @@ use Kenjiefx\ScratchPHP\App\Themes\ThemeController;
 
 class VentaConfig {
 
-    private static string $CONFIG_FILE = __dir__.'/Assets/venta.config.json';
-    private static string $CUSTOM_CONFIG_FILE = '/venta/venta.config.json';
-    private static array $raw_config_options = [];
-    private static array $media_breakpoints = [];
+    private static string $CONFIG_DIR         = __dir__.'/Assets';
+    private static string $CUSTOM_CONFIG_DIR = '/venta';
+    private static array  $raw_config_options = [];
+    private static array  $media_breakpoints  = [];
 
     private ThemeController $ThemeController;
 
@@ -26,22 +26,22 @@ class VentaConfig {
             $this->ThemeController = new ThemeController;
 
             # Instantiating config from the built-in config file
-            $config_options = json_decode(file_get_contents(VentaConfig::$CONFIG_FILE),TRUE);
+            $config_options = $this->compile_builtin_configs(static::$CONFIG_DIR);
 
             # Unpacking non-attribute configuration. For example, "media-breakpoints"
             $config_options = $this->unpack_media_breakpoints($config_options);
 
             # Retrieving custom Venta CSS config in the active theme directory, if there is any
-            $custom_venta_config_path = $this->ThemeController->getThemeDirPath().static::$CUSTOM_CONFIG_FILE;
-            if (file_exists($custom_venta_config_path)) {
+            $custom_venta_config_dir_path = $this->ThemeController->getThemeDirPath().static::$CUSTOM_CONFIG_DIR;
+            if (is_dir($custom_venta_config_dir_path)) {
 
-                $sanitized_custom_config_options = $this->sanitize_config_option(
-                    json_decode(file_get_contents($custom_venta_config_path),TRUE)
-                );
+                $sanitized_custom_config_options = $this->compile_custom_configs($custom_venta_config_dir_path);
 
                 foreach ($sanitized_custom_config_options as $config_name => $configuration) {
                     $config_options[$config_name] = $configuration;
                 }
+
+                $this->compile_themed_configs($custom_venta_config_dir_path,$config_options);
             }
 
             static::$raw_config_options = $config_options;
@@ -91,6 +91,64 @@ class VentaConfig {
         }
         
         return $config_options;
+    }
+
+    /**
+     * Retrieves all config JSON files in the src/Assets directory
+     */
+    private function compile_builtin_configs(string $config_directory){
+        $configs = [];
+        foreach (scandir($config_directory) as $file_name) {
+            if ($file_name==='.'||$file_name==='..') continue;
+            $path = $config_directory.'/'.$file_name;
+            $data = json_decode(file_get_contents($path),TRUE);
+            foreach ($data as $name => $value) {
+                $configs[$name] = $value;
+            }
+        }
+        return $configs;
+    }
+
+
+    private function compile_custom_configs(string $config_directory) {
+        $configs = [];
+        foreach (scandir($config_directory) as $file_name) {
+            if ($file_name==='.'||$file_name==='..') continue;
+            $custom_venta_config_path = $config_directory.'/'.$file_name;
+            if (!is_dir($custom_venta_config_path)) {
+                $data = $this->sanitize_config_option(
+                    json_decode(file_get_contents($custom_venta_config_path),TRUE)
+                );
+                foreach ($data as $name => $value) {
+                    $configs[$name] = $value;
+                }
+            }
+        }
+        return $configs;
+    }
+
+    private function compile_themed_configs(string $config_directory,array &$config_options) {
+        foreach(scandir($config_directory) as $dir_name) {
+            if ($dir_name==='.'||$dir_name==='..') continue;
+            $path = $config_directory.'/'.$dir_name;
+            if (is_dir($path)){
+                foreach (scandir($path) as $file_name) {
+                    if ($file_name==='.'||$file_name==='..') continue;
+                    $file_path = $path.'/'.$file_name;
+                    if (!is_dir($file_path)) {
+                        $data = $this->sanitize_config_option(
+                            json_decode(file_get_contents($file_path),TRUE)
+                        );
+                        foreach ($data as $name => $value) {
+                            if (isset($config_options[$name])) {
+                                if (!isset($config_options[$name]['themes'])) $config_options[$name]['themes'] = [];
+                                if (!isset($config_options[$name]['themes'][$dir_name])) $config_options[$name]['themes'][$dir_name] = $value;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
