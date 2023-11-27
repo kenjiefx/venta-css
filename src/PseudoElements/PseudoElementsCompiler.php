@@ -57,6 +57,7 @@ class PseudoElementsCompiler
                         $utility_class_value = $this->UtilityClassRegistry->get_utility_value($utility_name);
 
                         $this->set_utilized_pseudo(
+                            utility_class_name: $utility_name,
                             class_name:    $class_name,
                             minified_name: $minified_name,
                             css_value:     $utility_class_value,
@@ -82,12 +83,13 @@ class PseudoElementsCompiler
         return $this->utilized_pseudo_class[$class_name];
     }
 
-    public function set_utilized_pseudo(string $class_name, string $minified_name, string $css_value, string $pseudo_class, ?string $breakpoint_condition){
+    public function set_utilized_pseudo(string $utility_class_name, string $class_name, string $minified_name, string $css_value, string $pseudo_class, ?string $breakpoint_condition){
         $this->utilized_pseudo_class[$class_name] = [
             'minified_name' => $minified_name,
             'css_value' => $css_value,
             'pseudo_class' => $pseudo_class,
-            'breakpoint_condition' => $breakpoint_condition
+            'breakpoint_condition' => $breakpoint_condition,
+            'utility_class_name' => $utility_class_name
         ];
     }
 
@@ -98,6 +100,10 @@ class PseudoElementsCompiler
     public function export(){
         $css = '';
         foreach ($this->utilized_pseudo_class as $class_name => $data) {
+            $themed_keyval = $this->UtilityClassRegistry->get_utility_themed_keyval($data['utility_class_name']);
+            if (!empty($themed_keyval)) {
+                $css .= '.'.$themed_keyval['theme_name'].' .'.$data['minified_name'].'::'.$data['pseudo_class'].'{'.$themed_keyval['value'].'}';
+            }
             if (null===$data['breakpoint_condition']) {
                 $css .= '.'.$data['minified_name'].'::'.$data['pseudo_class'].'{'.$data['css_value'].'}';
                 continue;
@@ -107,6 +113,12 @@ class PseudoElementsCompiler
                 breakpoint_derived_condition: $breakpoint_condition, 
                 css_statement: '.'.$data['minified_name'].'::'.$data['pseudo_class'].'{'.$data['css_value'].'}'
             );
+            if (!empty($themed_keyval)) {
+                MediaQueryCompiler::set_prepared_breakpoint_addon(
+                    breakpoint_derived_condition: $breakpoint_condition, 
+                    css_statement: '.'.$themed_keyval['theme_name'].' .'.$data['minified_name'].'::'.$data['pseudo_class'].'{'.$themed_keyval['value'].'}'
+                );
+            }
         }
         return $css;
     }
