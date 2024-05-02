@@ -112,16 +112,16 @@ class UtilityClassRegistry
                         # The difference of the values between the variants
                         [$min,$max] = $configuration['values'];
                         $rule       = $configuration['rule'];
-                        $separator   = $configuration['separator'];
-                        $iterator   = 1;
-                        while ($iterator<intval($max)+1) {
+                        $separator  = $configuration['separator'];
+                        $value      = intval($min);
+                        while ($value<intval($max)+1) {
                             # Generating the actual selector name
-                            $actual_utility_selector = $attribute_name.$separator.$iterator;
+                            $actual_utility_selector = $attribute_name.$separator.$value;
                             static::$array_of_utility_classes[$actual_utility_selector] = [
-                                'value' => $this->fill_placeholder($rule,strval($iterator)),
+                                'value' => $this->fill_placeholder($rule,strval($value)),
                                 'minified_name' => null
                             ];
-                            $iterator++;
+                            $value++;
                         }
                         break;
 

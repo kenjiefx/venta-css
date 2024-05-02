@@ -30,14 +30,14 @@
     "flex-grow": {
 		"rule": "flex-grow:{value}",
 		"type": "count",
-		"values": ["1","24"],
+		"values": ["0","24"],
 		"variants": "auto",
 		"separator": "-"
 	},
     "flex-shrink": {
 		"rule": "flex-shrink:{value}",
 		"type": "count",
-		"values": ["1","24"],
+		"values": ["0","24"],
 		"variants": "auto",
 		"separator": "-"
 	}
