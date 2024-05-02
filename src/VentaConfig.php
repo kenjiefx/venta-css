@@ -120,6 +120,10 @@ class VentaConfig {
                     json_decode(file_get_contents($custom_venta_config_path),TRUE)
                 );
                 foreach ($data as $name => $value) {
+                    if ($name==='media-breakpoints') {
+                        $this->unpack_media_breakpoints($data);
+                        continue;
+                    }
                     $configs[$name] = $value;
                 }
             }
