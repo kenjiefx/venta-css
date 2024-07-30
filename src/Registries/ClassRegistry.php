@@ -18,7 +18,7 @@ class ClassRegistry
      */
     private static array $classes = [];
 
-    private const CLASS_ATTRIBUTE = ' class="';
+    private const CLASS_ATTRIBUTE = 'class="';
 
     /**
      * Parses and registers all classes in a given HTML string
