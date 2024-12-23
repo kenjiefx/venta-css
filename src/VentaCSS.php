@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 namespace Kenjiefx\VentaCSS;
+use Kenjiefx\ScratchPHP\App\Build\BuildEventDTO;
 use Kenjiefx\ScratchPHP\App\Components\ComponentModel;
 use Kenjiefx\ScratchPHP\App\Events\ListensTo;
 use Kenjiefx\ScratchPHP\App\Events\OnBuildCssEvent;
@@ -52,24 +53,29 @@ class VentaCSS implements ExtensionsInterface {
 
 
     #[ListensTo(OnBuildHtmlEvent::class)]
-    public function mutatePageHTML(string $page_html): string
+    public function mutatePageHTML(BuildEventDTO $BuildEventDTO): void
     {
-        $this->preprocess_html = $page_html;
+        $this->preprocess_html = $BuildEventDTO->content;
         $this->run_extension();
         $this->generate_postprocess_css();
-        $postprocessed_html = $this->PageHtmlMutator->mutate(($page_html));
+        $postprocessed_html = $this->PageHtmlMutator->mutate(($BuildEventDTO->content));
         $this->clear_all_registry();
-        return $postprocessed_html;
+        $BuildEventDTO->content = $postprocessed_html;
     }
 
 
     #[ListensTo(OnBuildCssEvent::class)]
-    public function mutatePageCSS(string $page_css): string
+    public function mutatePageCSS(BuildEventDTO $BuildEventDTO): void
     {
-        $postprocess_css = $page_css.$this->postprocess_css;
+        $postprocess_css = $BuildEventDTO->content . $this->postprocess_css;
         # Clearing $this->postprocess_css for the next page render
         $this->postprocess_css = '';
-        return str_replace(["\r","\n","    ","\t"],"",$postprocess_css);
+        $BuildEventDTO->content
+            = str_replace(
+                ["\r","\n","    ","\t"],
+                "",
+                $postprocess_css
+        );
     }
 
     public function run_extension()

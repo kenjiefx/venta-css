@@ -32,7 +32,7 @@ class VentaConfig {
             $config_options = $this->unpack_media_breakpoints($config_options);
 
             # Retrieving custom Venta CSS config in the active theme directory, if there is any
-            $custom_venta_config_dir_path = $this->ThemeController->getThemeDirPath().static::$CUSTOM_CONFIG_DIR;
+            $custom_venta_config_dir_path = $this->ThemeController->getdir().static::$CUSTOM_CONFIG_DIR;
             if (is_dir($custom_venta_config_dir_path)) {
 
                 $sanitized_custom_config_options = $this->compile_custom_configs($custom_venta_config_dir_path);
