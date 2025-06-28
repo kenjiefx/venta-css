@@ -5,6 +5,6 @@
         "useRandomAssetsFileNames": true
     },
     "extensions": {
-        "Kenjiefx\\VentaCSS\\VentaCSS":{}
+        "Kenjiefx\\VentaCSS\\Integrations\\Scratch\\VentaScratchExtension":{}
     }
 }

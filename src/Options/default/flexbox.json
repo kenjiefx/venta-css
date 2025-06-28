@@ -1,0 +1,32 @@
+{
+	"flex-direction": {
+        "rule": "flex-direction:{value}",
+        "type": "list",
+        "values": ["row","column","row-reverse","column-reverse"]
+    },
+    "align-items": {
+        "rule": "align-items:{value}",
+        "type": "list",
+        "values": ["normal","stretch","center","flex-start","flex-end","start","end","baseline","initial","inherit"]
+    },
+    "justify-content": {
+        "rule": "justify-content: {value}",
+        "type": "list",
+        "values": ["flex-start","flex-end","center","space-between","space-around","space-evenly","initial","inherit"]
+    },
+    "flex-wrap": {
+        "rule": "flex-wrap: {value}",
+        "type": "list",
+        "values": ["nowrap","wrap","wrap-reverse"]
+    },
+    "flex-grow": {
+		"rule": "flex-grow: {value}",
+		"type": "count",
+		"values": [0,24]
+	},
+    "flex-shrink": {
+		"rule": "flex-shrink: {value}",
+		"type": "count",
+		"values": [0,24]
+	}
+}
