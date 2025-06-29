@@ -18,13 +18,19 @@ class OptionsCollector {
         public readonly OptionFactory $optionFactory
     ) {}
 
-    public function collect(): OptionIterator {
+    public function collect(
+        string $customConfigDir
+    ): OptionIterator {
         if (static::$iterator !== null) {
             // If the iterator is already set, we do not need to collect options again.
             return static::$iterator;
         }
-        $defaultOptions = $this->scanDir("default", __DIR__ . self::DEFAULT_DIR);
-        static::$iterator = new OptionIterator($defaultOptions);
+        $aggregatedOptions = $this->scanDir("default", __DIR__ . self::DEFAULT_DIR);
+        if ($this->directoryService->isDirectory($customConfigDir)) {
+            $customOptions = $this->scanDir("default", $customConfigDir);
+            array_push($aggregatedOptions, ...$customOptions);
+        }
+        static::$iterator = new OptionIterator($aggregatedOptions);
         return static::$iterator;
     }
 
@@ -34,11 +40,19 @@ class OptionsCollector {
         $options = [];
         foreach ($files as $file) {
             if (pathinfo($file, PATHINFO_EXTENSION) === 'json') {
-                $filePath = __DIR__ . self::DEFAULT_DIR . '/' . $file;
+                $filePath = $dir . '/' . $file;
                 $optionList = $this->getOptionFile($filePath);
                 foreach ($optionList as $key => $option) {
                     $options[] = $this->optionFactory->create($theme, $key, $option);
                 }
+                continue;
+            }
+            $dirPath = "{$dir}/{$file}";
+            $isDir = $this->directoryService->isDirectory($dirPath);
+            if ($isDir) {
+                $themeName = $file;
+                $themedOptions = $this->scanDir($themeName, $dirPath);
+                array_push($options, ...$themedOptions);
             }
         }
         return $options;

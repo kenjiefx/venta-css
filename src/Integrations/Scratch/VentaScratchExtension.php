@@ -17,7 +17,7 @@ class VentaScratchExtension implements ExtensionsInterface {
     
     #[ListensTo(PageBuildStartedEvent::class)]
     public function beforePageBuild(PageBuildStartedEvent $event): void {
-        $this->beforePageBuildService->run();
+        $this->beforePageBuildService->run($event->getPageModel());
     }
 
     #[ListensTo(HTMLBuildCompletedEvent::class)]

@@ -2,10 +2,13 @@
 
 namespace Kenjiefx\VentaCSS\Integrations\Scratch;
 
+use Kenjiefx\ScratchPHP\App\Configurations\ConfigurationInterface;
+use Kenjiefx\ScratchPHP\App\Pages\PageModel;
+use Kenjiefx\ScratchPHP\App\Themes\ThemeFactory;
+use Kenjiefx\ScratchPHP\App\Themes\ThemeService;
 use Kenjiefx\VentaCSS\Options\OptionsCollector;
 use Kenjiefx\VentaCSS\Services\BreakpointRegistrationService;
 use Kenjiefx\VentaCSS\Services\ClassRegistrationService;
-use Kenjiefx\VentaCSS\Usages\ClassList\ClassListRegistry;
 
 class BeforePageBuildService {
 
@@ -13,24 +16,27 @@ class BeforePageBuildService {
         public readonly OptionsCollector $optionsCollector,
         public readonly ClassRegistrationService $classRegistrationService,
         public readonly BreakpointRegistrationService $breakpointRegistrationService,
-        public readonly ClassListRegistry $classListRegistry
+        public readonly ConfigurationInterface $configuration,
+        public readonly ThemeService $themeService,
+        public readonly ThemeFactory $themeFactory
     ) {}
 
-    public function run(){
-        $this->classListRegistry->clear();
-        $options = $this->optionsCollector->collect();
+    public function run(
+        PageModel $pageModel
+    ){
+        $ventaDir = $this->getVentaDirPath();
+        $options = $this->optionsCollector->collect($ventaDir);
         foreach ($options as $option) {
             $this->classRegistrationService->fromOption($option);
             $this->breakpointRegistrationService->fromOption($option);
         }
-        $classRegistry = $this->classRegistrationService->getRegistry();
-        // $classes = $classRegistry->getAll();
-        // foreach ($classes as $class) {
-        //     $classDeclaration = $class->declaration;
-        //     $property = $class->key->property;
-        //     $variant = $class->key->variant;
-        //     echo "{$property}:{$variant} { {$classDeclaration} }<br>";
-        // }
+    }
+
+    private function getVentaDirPath(){
+        $themeName = $this->configuration->getThemeName();
+        $themeModel = $this->themeFactory->create($themeName);
+        $themeDir = $this->themeService->getThemeDir($themeModel);
+        return "{$themeDir}/venta";
     }
 
 }
