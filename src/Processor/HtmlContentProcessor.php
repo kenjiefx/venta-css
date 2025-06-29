@@ -29,6 +29,10 @@ class HtmlContentProcessor {
             $minifiedNames = [];
             foreach ($styleNotations as $styleNotation) {
                 $styleNotationModel = $this->styleNotationFactory->create($styleNotation);
+                if ($styleNotationModel === null) {
+                    $minifiedNames[] = $styleNotation;
+                    continue;
+                }
                 // Register the style notation in the registry
                 $this->styleNotationRegistry->registerIfNotExist($styleNotationModel);
                 $registeredStyleNotationModel = $this->styleNotationRegistry->lookupByNotation($styleNotation);

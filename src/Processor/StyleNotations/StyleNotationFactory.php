@@ -24,28 +24,33 @@ class StyleNotationFactory {
      * - "display:none@desktop" becomes a StyleNotationModel with value "display:none@desktop", breakpoint "desktop", minifiedName "d9k", and cssRegister ".d9k{display:none;}".
      * Notations without breakpoint or pseudo-class are also supported. 
      * Notations without breakpoint will default to the "default" breakpoint.
+     * This method returns null if the notation is not valid
      * @param string $styleNotation
      * @return void
      */
     public function create(
         string $styleNotation
-    ): StyleNotationModel {
-        // Let's attempt to retrieve the breakpoint from the style notation.
-        $breakpointModel = $this->retrieveBreakpoint($styleNotation);
-        $pseudoClassEnum = $this->retrievePseudoClass($styleNotation);
-        $minifiedName = $this->minifiedTokenPool->generate();
-        $cssRegisters = $this->createCssRegisters(
-            styleNotation: $styleNotation,
-            minifiedName: $minifiedName
-        );
-        // Create the StyleNotationModel with the parsed values.
-        return new StyleNotationModel(
-            value: $styleNotation,
-            minifiedName: $minifiedName,
-            pseudoClass: $pseudoClassEnum,
-            breakpoint: $breakpointModel,
-            cssRegisters: $cssRegisters
-        );
+    ): StyleNotationModel | null {
+        try {
+            // Let's attempt to retrieve the breakpoint from the style notation.
+            $breakpointModel = $this->retrieveBreakpoint($styleNotation);
+            $pseudoClassEnum = $this->retrievePseudoClass($styleNotation);
+            $minifiedName = $this->minifiedTokenPool->generate();
+            $cssRegisters = $this->createCssRegisters(
+                styleNotation: $styleNotation,
+                minifiedName: $minifiedName
+            );
+            // Create the StyleNotationModel with the parsed values.
+            return new StyleNotationModel(
+                value: $styleNotation,
+                minifiedName: $minifiedName,
+                pseudoClass: $pseudoClassEnum,
+                breakpoint: $breakpointModel,
+                cssRegisters: $cssRegisters
+            );
+        } catch (\Exception $th) {
+            return null;
+        }
     }
 
     /**
