@@ -1,0 +1,113 @@
+{
+    "width": {
+      "rule": "width:{value}%",
+      "type": "minmax",
+      "values": [0, 100]
+    },
+    "max-width-small": {
+      "rule": "max-width:{value}px",
+      "type": "minmax",
+      "values": [1, 100]
+    },
+    "max-width": {
+      "rule": "max-width:{value}px",
+      "type": "minmax",
+      "values": [100, 800]
+    },
+    "max-width-medium": {
+      "rule": "max-width:{value}px",
+      "type": "minmax",
+      "values": [800, 1300]
+    },
+    "max-width-large": {
+      "rule": "max-width:{value}px",
+      "type": "minmax",
+      "values": [1300, 2300]
+    },
+    "min-width-small": {
+      "rule": "min-width:{value}px",
+      "type": "minmax",
+      "values": [1, 100]
+    },
+    "min-width": {
+      "rule": "min-width:{value}px",
+      "type": "minmax",
+      "values": [100, 800]
+    },
+    "min-width-medium": {
+      "rule": "min-width:{value}px",
+      "type": "minmax",
+      "values": [800, 1300]
+    },
+    "min-width-large": {
+      "rule": "min-width:{value}px",
+      "type": "minmax",
+      "values": [1300, 2300]
+    },
+    "concrete-width-extra-small": {
+      "rule": "width:{value}px",
+      "type": "minmax",
+      "values": [1, 40]
+    },
+    "concrete-width-small": {
+      "rule": "width:{value}px",
+      "type": "minmax",
+      "values": [40, 104]
+    },
+    "concrete-width": {
+      "rule": "width:{value}px",
+      "type": "minmax",
+      "values": [104, 390]
+    },
+    "concrete-width-large": {
+      "rule": "width:{value}px",
+      "type": "minmax",
+      "values": [390, 840]
+    },
+    "concrete-width-extra-large": {
+      "rule": "width:{value}px",
+      "type": "minmax",
+      "values": [840, 1700]
+    },
+    "width-static": {
+      "rule": "width:{value}",
+      "type": "list",
+      "values": [
+        "max-content",
+        "min-content",
+        "fit-content",
+        "auto",
+        "inherit",
+        "initial",
+        "unset"
+      ]
+    },
+    "max-width-static": {
+      "rule": "max-width:{value}",
+      "type": "list",
+      "values": [
+        "max-content",
+        "min-content",
+        "fit-content",
+        "none",
+        "auto",
+        "inherit",
+        "initial",
+        "unset"
+      ]
+    },
+    "min-width-static": {
+      "rule": "min-width:{value}",
+      "type": "list",
+      "values": [
+        "max-content",
+        "min-content",
+        "fit-content",
+        "auto",
+        "inherit",
+        "initial",
+        "unset"
+      ]
+    }
+  }
+  

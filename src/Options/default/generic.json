@@ -1,0 +1,17 @@
+{
+    "display": {
+        "rule": "display:{value}",
+        "type": "list",
+        "values": ["block", "inline", "inline-block", "none", "table", "table-cell", "table-row", "flex", "grid", "list-item", "inline-flex", "inline-grid", "initial", "inherit"]
+    },
+    "font-weight": {
+		"rule": "font-weight:{value}",
+		"type": "list",
+		"values": ["100","200","300","400","500","600","700","800","900","bold"]
+	},
+    "border-style": {
+		"rule": "border-style:{value}",
+		"type": "list",
+		"values": ["dotted","dashed","solid","double","groove","ridge","inset","outset","none","hidden"]
+	}
+}

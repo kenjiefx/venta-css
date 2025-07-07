@@ -1,0 +1,18 @@
+{
+    "desktop": {
+		"rule": "@media (min-width: {minWidth})",
+		"type": "breakpoint",
+		"values": {
+            "min-width": "769px",
+            "max-width": "null"
+        }
+	},
+    "mobile": {
+        "rule": "@media (max-width: {maxWidth})",
+        "type": "breakpoint",
+        "values": {
+            "min-width": "1px",
+            "max-width": "768px"
+        }
+    }
+}

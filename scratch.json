@@ -1,0 +1,10 @@
+{
+    "theme": "slate",
+    "exportDir": "\/dist",
+    "build": {
+        "useRandomAssetsFileNames": true
+    },
+    "extensions": {
+        "Kenjiefx\\VentaCSS\\Integrations\\Scratch\\VentaScratchExtension":{}
+    }
+}
