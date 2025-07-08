@@ -4,6 +4,11 @@
         "type": "list",
         "values": ["block", "inline", "inline-block", "none", "table", "table-cell", "table-row", "flex", "grid", "list-item", "inline-flex", "inline-grid", "initial", "inherit"]
     },
+	"position": {
+        "rule": "position:{value}",
+        "type": "list",
+        "values": ["static", "relative", "absolute", "fixed", "sticky", "initial", "inherit"]
+    },
     "font-weight": {
 		"rule": "font-weight:{value}",
 		"type": "list",
