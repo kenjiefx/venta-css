@@ -2,15 +2,16 @@
 
 namespace Kenjiefx\VentaCSS\Integrations\Scratch;
 
-use Kenjiefx\ScratchPHP\App\Events\CSSBuildCompletedEvent;
-use Kenjiefx\ScratchPHP\App\Events\HTMLBuildCompletedEvent;
+
+use Kenjiefx\ScratchPHP\App\Events\Instances\PageAfterBuildEvent;
+use Kenjiefx\ScratchPHP\App\Events\Instances\PageBeforeBuildEvent;
+use Kenjiefx\ScratchPHP\App\Events\Instances\PageCSSBuildCompleteEvent;
+use Kenjiefx\ScratchPHP\App\Events\Instances\PageHTMLBuildCompleteEvent;
 use Kenjiefx\ScratchPHP\App\Events\ListensTo;
-use Kenjiefx\ScratchPHP\App\Events\PageBuildCompletedEvent;
-use Kenjiefx\ScratchPHP\App\Events\PageBuildStartedEvent;
-use Kenjiefx\ScratchPHP\App\Extensions\ExtensionsInterface;
+use Kenjiefx\ScratchPHP\App\Extensions\ExtensionInterface;
 use Kenjiefx\VentaCSS\Variables\RootVariableService;
 
-class VentaScratchExtension implements ExtensionsInterface {
+class VentaScratchExtension implements ExtensionInterface {
 
     public function __construct(
         public readonly BeforePageBuildService $beforePageBuildService,
@@ -18,28 +19,28 @@ class VentaScratchExtension implements ExtensionsInterface {
         public readonly RootVariableService $rootVariableService
     ) {}
     
-    #[ListensTo(PageBuildStartedEvent::class)]
-    public function beforePageBuild(PageBuildStartedEvent $event): void {
-        $this->beforePageBuildService->run($event->getPageModel());
+    #[ListensTo(PageBeforeBuildEvent::class)]
+    public function beforePageBuild(PageBeforeBuildEvent $event): void {
+        $this->beforePageBuildService->run($event->page);
     }
 
-    #[ListensTo(HTMLBuildCompletedEvent::class)]
-    public function processHTML(HTMLBuildCompletedEvent $event): void {
-        $modifiedHtml = $this->pageHtmlProcessor->processHtml($event->getContent());
+    #[ListensTo(PageHTMLBuildCompleteEvent::class)]
+    public function processHTML(PageHTMLBuildCompleteEvent $event): void {
+        $modifiedHtml = $this->pageHtmlProcessor->processHtml($event->content);
         $this->rootVariableService->collect($modifiedHtml);
-        $event->updateContent($modifiedHtml);
+        $event->content = $modifiedHtml;
     }
 
-    #[ListensTo(CSSBuildCompletedEvent::class)]
-    public function processCSS(CSSBuildCompletedEvent $event): void {
-        $originalCss = $event->getContent();
+    #[ListensTo(PageCSSBuildCompleteEvent::class)]
+    public function processCSS(PageCSSBuildCompleteEvent $event): void {
+        $originalCss = $event->content;
         $this->rootVariableService->collect($originalCss);
         $processedCss = $this->pageHtmlProcessor->getProcessedCss();
         $rootCssVariables = $this->rootVariableService->createRootCssVariables();
-        $event->updateContent($rootCssVariables . "\n" . $originalCss . "\n" . $processedCss);
+        $event->content = $rootCssVariables . "\n" . $originalCss . "\n" . $processedCss;
     }
 
-    #[ListensTo(PageBuildCompletedEvent::class)]
+    #[ListensTo(PageAfterBuildEvent::class)]
     public function afterPageBuild() {
         $this->rootVariableService->clearUsedVariables();
     }

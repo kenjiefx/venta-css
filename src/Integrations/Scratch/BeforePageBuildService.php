@@ -2,10 +2,10 @@
 
 namespace Kenjiefx\VentaCSS\Integrations\Scratch;
 
-use Kenjiefx\ScratchPHP\App\Configurations\ConfigurationInterface;
+use Kenjiefx\ScratchPHP\App\Interfaces\ConfigurationInterface;
+use Kenjiefx\ScratchPHP\App\Interfaces\ThemeServiceInterface;
 use Kenjiefx\ScratchPHP\App\Pages\PageModel;
-use Kenjiefx\ScratchPHP\App\Themes\ThemeFactory;
-use Kenjiefx\ScratchPHP\App\Themes\ThemeService;
+use Kenjiefx\ScratchPHP\App\Themes\ThemeModel;
 use Kenjiefx\VentaCSS\Options\OptionsCollector;
 use Kenjiefx\VentaCSS\Services\BreakpointRegistrationService;
 use Kenjiefx\VentaCSS\Services\ClassRegistrationService;
@@ -17,14 +17,13 @@ class BeforePageBuildService {
         public readonly ClassRegistrationService $classRegistrationService,
         public readonly BreakpointRegistrationService $breakpointRegistrationService,
         public readonly ConfigurationInterface $configuration,
-        public readonly ThemeService $themeService,
-        public readonly ThemeFactory $themeFactory
+        public readonly ThemeServiceInterface $themeService,
     ) {}
 
     public function run(
         PageModel $pageModel
     ){
-        $ventaDir = $this->getVentaDirPath();
+        $ventaDir = $this->getVentaDirPath($pageModel->theme);
         $options = $this->optionsCollector->collect($ventaDir);
         foreach ($options as $option) {
             $this->classRegistrationService->fromOption($option);
@@ -32,9 +31,10 @@ class BeforePageBuildService {
         }
     }
 
-    private function getVentaDirPath(){
+    private function getVentaDirPath(
+        ThemeModel $themeModel
+    ){
         $themeName = $this->configuration->getThemeName();
-        $themeModel = $this->themeFactory->create($themeName);
         $themeDir = $this->themeService->getThemeDir($themeModel);
         return "{$themeDir}/venta";
     }

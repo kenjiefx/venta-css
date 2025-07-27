@@ -2,7 +2,7 @@
 
 namespace Kenjiefx\VentaCSS\Options;
 
-use Kenjiefx\ScratchPHP\App\Directories\DirectoryService;
+use Kenjiefx\ScratchPHP\App\Utils\DirectoryService;
 use Kenjiefx\VentaCSS\Files\FilePathFactory;
 use Kenjiefx\VentaCSS\Files\FileService;
 
