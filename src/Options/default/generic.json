@@ -4,6 +4,11 @@
         "type": "list",
         "values": ["block", "inline", "inline-block", "none", "table", "table-cell", "table-row", "flex", "grid", "list-item", "inline-flex", "inline-grid", "initial", "inherit"]
     },
+	"position": {
+        "rule": "position:{value}",
+        "type": "list",
+        "values": ["static", "relative", "absolute", "fixed", "sticky", "initial", "inherit"]
+    },
     "font-weight": {
 		"rule": "font-weight:{value}",
 		"type": "list",
@@ -13,5 +18,10 @@
 		"rule": "border-style:{value}",
 		"type": "list",
 		"values": ["dotted","dashed","solid","double","groove","ridge","inset","outset","none","hidden"]
-	}
+	},
+    "cursor": {
+        "rule": "cursor:{value}",
+        "type": "list",
+        "values": ["auto", "default", "none", "context-menu", "help", "pointer", "progress", "wait", "cell", "crosshair", "text", "vertical-text", "alias", "copy", "move", "no-drop", "not-allowed", "grab", "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize", "e-resize", "s-resize", "w-resize", "ne-resize", "nw-resize", "se-resize", "sw-resize"]
+    }
 }

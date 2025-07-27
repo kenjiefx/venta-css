@@ -71,7 +71,7 @@ class ClassRegistrationService {
         // Loop variant from 0 to 24
         for ($variant = 0; $variant <= 24; $variant++) {
             // Calculate the current value based on the variant
-            $currentValue = $min + ($variant * $interval);
+            $currentValue = round($min + ($variant * $interval), 5);
             // Create utility class for each value in the range
             $declaration = $this->fillPlaceholder(
                 $optionModel->rule, (string)$currentValue

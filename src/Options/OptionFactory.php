@@ -88,7 +88,7 @@ class OptionFactory
             throw new InvalidArgumentException("Option type 'minmax' requires 1 to 3 elements.");
         }
 
-        if (!array_reduce($values, fn($carry, $item) => $carry && is_int($item), true)) {
+        if (!array_reduce($values, fn($carry, $item) => $carry && is_numeric($item), true)) {
             throw new InvalidArgumentException("Option type 'minmax' requires integer values.");
         }
     }
